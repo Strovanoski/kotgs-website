@@ -53,12 +53,15 @@
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex space-x-1">
-                    <button onclick="switchTab('home')" id="nav-home" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30">Home</button>
-                    <button onclick="switchTab('roster')" id="nav-roster" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Roster</button>
-                    <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Apply</button>
-                    <button onclick="switchTab('news-archive')" id="nav-news-archive" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Chronicles</button>
-                    <button onclick="switchTab('profile')" id="nav-profile" class="hidden px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">My Profile</button>
-                    <button onclick="switchTab('officer')" id="nav-officer" class="hidden px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
+                    <button onclick="switchTab('home')" id="nav-home" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30">Home</button>
+                    <button onclick="switchTab('roster')" id="nav-roster" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Roster</button>
+                    <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Apply</button>
+                    <button onclick="switchTab('news-archive')" id="nav-news-archive" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Chronicles</button>
+                    <button onclick="switchTab('rules')" id="nav-rules" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Charter</button>
+                    <button onclick="switchTab('resources')" id="nav-resources" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Resources</button>
+                    <button onclick="switchTab('gallery')" id="nav-gallery" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Gallery</button>
+                    <button onclick="switchTab('profile')" id="nav-profile" class="hidden px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">My Profile</button>
+                    <button onclick="switchTab('officer')" id="nav-officer" class="hidden px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
                         <span>Officers</span>
                         <span id="nav-badge" class="hidden bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
                     </button>
@@ -103,6 +106,9 @@
             <button onclick="switchTab('roster'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Roster</button>
             <button onclick="switchTab('recruitment'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Apply</button>
             <button onclick="switchTab('news-archive'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Chronicles</button>
+            <button onclick="switchTab('rules'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Charter</button>
+            <button onclick="switchTab('resources'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Resources</button>
+            <button onclick="switchTab('gallery'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Gallery</button>
             <button onclick="switchTab('profile'); toggleMobileMenu()" id="mobile-nav-profile" class="hidden block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">My Profile</button>
             <button onclick="switchTab('officer'); toggleMobileMenu()" id="mobile-nav-officer" class="hidden block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Officer Center</button>
             <button onclick="loginWithDiscord()" class="block w-full text-center px-3 py-2 rounded text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Member Login</button>
@@ -192,7 +198,7 @@
                         </div>
                     </div>
 
-                    <!-- RIGHT COLUMN: Side Widgets (Order: Guild Vitals -> Upcoming Expeditions -> Recruitment Priorities) -->
+                    <!-- RIGHT COLUMN: Side Widgets -->
                     <div class="space-y-8">
                         <!-- Guild Vitals -->
                         <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
@@ -308,6 +314,42 @@
                 <div id="roster-empty-state" class="hidden text-center py-16 bg-slate-900/50 rounded-xl border border-slate-850">
                     <p class="text-slate-400">No companions matching your filter criteria were found in our records.</p>
                 </div>
+            </div>
+        </section>
+
+
+        <!-- ================= CHARTER & RULES VIEW ================= -->
+        <section id="view-rules" class="view-section py-8 md:py-12 hidden">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6">
+                <div class="mb-8 border-b border-slate-800 pb-5">
+                    <h2 class="text-3xl font-bold font-serif text-slate-100">Guild Charter & Code of Conduct</h2>
+                    <p class="text-slate-400 mt-1">Our foundational principles, loot distribution rules, and raid expectations.</p>
+                </div>
+                <div id="rules-content-list" class="space-y-6"></div>
+            </div>
+        </section>
+
+
+        <!-- ================= RESOURCES & TOOLS VIEW ================= -->
+        <section id="view-resources" class="view-section py-8 md:py-12 hidden">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6">
+                <div class="mb-8 border-b border-slate-800 pb-5">
+                    <h2 class="text-3xl font-bold font-serif text-slate-100">Monsters & Memories Resource Hub</h2>
+                    <p class="text-slate-400 mt-1">Essential external guides, official game launchers, and community tools.</p>
+                </div>
+                <div id="resources-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+        </section>
+
+
+        <!-- ================= GALLERY VIEW ================= -->
+        <section id="view-gallery" class="view-section py-8 md:py-12 hidden">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6">
+                <div class="mb-8 border-b border-slate-800 pb-5">
+                    <h2 class="text-3xl font-bold font-serif text-slate-100">Victory Archive & Gallery</h2>
+                    <p class="text-slate-400 mt-1">Preserving guild achievements, dungeon excursions, and historical memories.</p>
+                </div>
+                <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
         </section>
 
@@ -573,7 +615,7 @@
         <div class="max-w-7xl mx-auto px-4 space-y-4">
             <div class="flex justify-center space-x-6">
                 <a href="https://discord.gg/wKzW4VBAK6" id="discord-footer-btn" target="_blank" class="hover:text-indigo-400 flex items-center space-x-1 transition-colors">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.1.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/></svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/></svg>
                     <span>Discord Community</span>
                 </a>
             </div>
@@ -591,5 +633,8 @@
     <script src="js/roster.js"></script>
     <script src="js/news.js"></script>
     <script src="js/events.js"></script>
+    <script src="js/rules.js"></script>
+    <script src="js/resources.js"></script>
+    <script src="js/gallery.js"></script>
 </body>
 </html>
