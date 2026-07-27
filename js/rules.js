@@ -1,5 +1,5 @@
 // Guild Rules, Charter & The Oath of the Golden Spoon
-let guildOathText = `"We swear to hold aloft the Spoon in times of shadow. We shield the weary, feed the crafting forges, and face down the deep horrors of this realm. Together as one family, we stand."`;
+let guildOathText = localStorage.getItem('kotgs_guild_oath') || "";
 
 let guildRulesList = [
     {
@@ -25,23 +25,32 @@ let guildRulesList = [
 ];
 
 async function fetchRulesAndOathFromSupabase() {
-    const { data: oathData } = await supabaseClient
-        .from('guild_settings')
-        .select('*')
-        .eq('key', 'guild_oath')
-        .single();
+    try {
+        const { data: oathData, error } = await supabaseClient
+            .from('guild_settings')
+            .select('*')
+            .eq('key', 'guild_oath')
+            .maybeSingle();
 
-    if (oathData && oathData.value) {
-        guildOathText = oathData.value;
+        if (oathData && oathData.value) {
+            guildOathText = oathData.value;
+            localStorage.setItem('kotgs_guild_oath', oathData.value);
+        }
+    } catch (e) {
+        console.error("Error fetching oath from Supabase:", e);
     }
 
-    const { data: rulesData } = await supabaseClient
-        .from('guild_rules')
-        .select('*')
-        .order('id', { ascending: true });
+    try {
+        const { data: rulesData } = await supabaseClient
+            .from('guild_rules')
+            .select('*')
+            .order('id', { ascending: true });
 
-    if (rulesData && rulesData.length > 0) {
-        guildRulesList = rulesData;
+        if (rulesData && rulesData.length > 0) {
+            guildRulesList = rulesData;
+        }
+    } catch (e) {
+        console.error("Error fetching rules from Supabase:", e);
     }
 
     renderOathUI();
@@ -60,7 +69,7 @@ function renderGuildRulesUI() {
     if (!container) return;
 
     container.innerHTML = guildRulesList.map(rule => `
-        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl space-y-3">
+        <div class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 shadow-xl space-y-3">
             <h3 class="text-xl font-bold font-serif text-gold-400 border-b border-gold-900/30 pb-2">${rule.title}</h3>
             <p class="text-slate-300 text-sm leading-relaxed whitespace-pre-line">${rule.content}</p>
         </div>
@@ -81,33 +90,49 @@ async function saveOathAndCharterFromOfficer() {
     const newOath = document.getElementById('officer-edit-oath')?.value.trim();
     const charterRaw = document.getElementById('officer-edit-charter')?.value.trim();
 
-    if (!newOath || !charterRaw) {
-        showNotification("Oath and Charter content cannot be empty.", "error");
+    if (!newOath) {
+        showNotification("Oath content cannot be empty.", "error");
         return;
     }
 
     showNotification("Saving Oath & Charter changes...");
 
     guildOathText = newOath;
-    await supabaseClient.from('guild_settings').upsert({ key: 'guild_oath', value: newOath }, { onConflict: 'key' });
+    localStorage.setItem('kotgs_guild_oath', newOath);
 
-    const blocks = charterRaw.split('\n\n---\n\n');
-    guildRulesList = blocks.map((b, idx) => {
-        const lines = b.trim().split('\n');
-        return {
-            id: String(idx + 1),
-            title: lines[0] || `Section ${idx + 1}`,
-            content: lines.slice(1).join('\n')
-        };
-    });
+    const { error: oathError } = await supabaseClient
+        .from('guild_settings')
+        .upsert({ key: 'guild_oath', value: newOath }, { onConflict: 'key' });
 
-    await supabaseClient.from('guild_rules').delete().neq('id', '0');
-    await supabaseClient.from('guild_rules').insert(guildRulesList.map(r => ({
-        title: r.title,
-        content: r.content
-    })));
+    if (oathError) {
+        console.error("Supabase Oath Save Error:", oathError);
+        showNotification("Oath saved locally (Supabase table error: " + oathError.message + ")", "error");
+    } else {
+        showNotification("Guild Oath and Charter updated successfully!");
+    }
 
-    showNotification("Guild Oath and Charter updated successfully!");
+    if (charterRaw) {
+        const blocks = charterRaw.split('\n\n---\n\n');
+        guildRulesList = blocks.map((b, idx) => {
+            const lines = b.trim().split('\n');
+            return {
+                id: String(idx + 1),
+                title: lines[0] || `Section ${idx + 1}`,
+                content: lines.slice(1).join('\n')
+            };
+        });
+
+        try {
+            await supabaseClient.from('guild_rules').delete().neq('id', '0');
+            await supabaseClient.from('guild_rules').insert(guildRulesList.map(r => ({
+                title: r.title,
+                content: r.content
+            })));
+        } catch (e) {
+            console.error("Supabase Charter Save Error:", e);
+        }
+    }
+
     renderOathUI();
     renderGuildRulesUI();
 }
