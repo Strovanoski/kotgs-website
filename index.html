@@ -90,14 +90,13 @@
 
                 <!-- Socials & Auth Controls -->
                 <div class="hidden lg:flex items-center space-x-3">
-                    <a href="https://discord.gg/wKzW4VBAK6" id="discord-header-btn" target="_blank" class="flex items-center space-x-2 text-slate-300 hover:text-indigo-400 transition-colors text-sm bg-slate-800/80 px-3.5 py-2 rounded-lg border border-slate-700/50">
+                    <a href="https://discord.gg/your-guild-link" id="discord-header-btn" target="_blank" class="flex items-center space-x-2 text-slate-300 hover:text-indigo-400 transition-colors text-sm bg-slate-800/80 px-3.5 py-2 rounded-lg border border-slate-700/50">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
                         </svg>
                         <span class="font-semibold text-xs tracking-wider">JOIN DISCORD</span>
                     </a>
                     
-                    <!-- Discord Login/Logout Controls -->
                     <div id="auth-header-logged-out">
                         <button onclick="loginWithDiscord()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition-colors tracking-wider">
                             MEMBER LOGIN
@@ -329,9 +328,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Primary Class</label>
-                            <select id="profile-class" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600">
-                                <!-- Populated dynamically -->
-                            </select>
+                            <select id="profile-class" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600"></select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Character Level</label>
@@ -472,7 +469,7 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date</label>
-                                        <input type="text" id="new-event-date" placeholder="July 25" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                        <input type="text" id="new-event-date" placeholder="July 28" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Time (EST)</label>
@@ -505,7 +502,7 @@
     <footer class="bg-slate-950 border-t border-slate-900/60 py-8 text-center text-slate-500 text-xs">
         <div class="max-w-7xl mx-auto px-4 space-y-4">
             <div class="flex justify-center space-x-6">
-                <a href="https://discord.gg/wKzW4VBAK6" id="discord-footer-btn" target="_blank" class="hover:text-indigo-400 flex items-center space-x-1 transition-colors">
+                <a href="https://discord.gg/your-guild-link" id="discord-footer-btn" target="_blank" class="hover:text-indigo-400 flex items-center space-x-1 transition-colors">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
                     <span>Discord Community</span>
                 </a>
@@ -539,17 +536,16 @@
 
         let dbRoster = [];
         let currentUserProfile = null;
-        let priorities = JSON.parse(localStorage.getItem('gms_priorities')) || {};
-        let events = JSON.parse(localStorage.getItem('gms_events')) || [];
+        let priorities = {};
+        let events = [];
 
         window.addEventListener('DOMContentLoaded', async () => {
             localStorage.removeItem('gms_roster');
 
             populateClassSelects();
             await fetchRosterFromSupabase();
-            renderRecruitmentNeeds();
-            renderEvents();
-            renderOfficerPriorities();
+            await fetchClassPrioritiesFromSupabase();
+            await fetchEventsFromSupabase();
 
             const { data: { session } } = await supabaseClient.auth.getSession();
             await updateAuthUI(session);
@@ -590,14 +586,12 @@
                 if (profileNavBtn) profileNavBtn.classList.remove('hidden');
                 if (mobileProfileBtn) mobileProfileBtn.classList.remove('hidden');
 
-                // Determine Discord Role
                 const roleData = await checkDiscordRoles(session);
                 const isOfficer = roleData.isGuildLeader || roleData.isOfficer;
                 const assignedRole = roleData.isGuildLeader ? 'Guild Leader' : (roleData.isOfficer ? 'Officer' : 'Member');
 
                 if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
 
-                // Auto-sync user into Supabase database roster
                 await syncUserToDatabaseRoster(session, assignedRole);
 
                 if (isOfficer) {
@@ -646,13 +640,12 @@
             }
         }
 
-        // Auto-Sync Logged-In Discord User to Database Roster
+        // Auto-Sync User to Database Roster
         async function syncUserToDatabaseRoster(session, assignedRole) {
             const userMeta = session.user.user_metadata;
             const discordId = userMeta.provider_id || session.user.identities?.[0]?.id || userMeta.sub;
             const discordName = userMeta.full_name || userMeta.name || userMeta.email || "Member";
 
-            // Check if user is already in guild_members table
             const { data: existingMember } = await supabaseClient
                 .from('guild_members')
                 .select('*')
@@ -660,7 +653,6 @@
                 .single();
 
             if (!existingMember) {
-                // Auto insert new profile
                 const { data: newMember } = await supabaseClient.from('guild_members').insert([{
                     discord_id: discordId,
                     username: discordName,
@@ -674,7 +666,6 @@
                 currentUserProfile = newMember;
                 await fetchRosterFromSupabase();
             } else {
-                // Update role if changed in Discord
                 if (existingMember.role !== assignedRole) {
                     await supabaseClient.from('guild_members')
                         .update({ role: assignedRole })
@@ -731,7 +722,7 @@
             }
         }
 
-        // Fetch Live Guild Members Roster from Supabase
+        // Fetch Live Guild Members Roster
         async function fetchRosterFromSupabase() {
             const container = document.getElementById('roster-grid');
             if (container) {
@@ -744,7 +735,7 @@
                 .order('created_at', { ascending: false });
 
             if (error) {
-                console.error("Error fetching roster from Supabase:", error.message);
+                console.error("Error fetching roster:", error.message);
                 if (container) {
                     container.innerHTML = `<div class="col-span-full text-center py-8 text-red-400">Error loading roster: ${error.message}</div>`;
                 }
@@ -822,6 +813,173 @@
 
         function filterRoster() {
             renderRosterUI();
+        }
+
+        // Fetch Live Expeditions from Supabase
+        async function fetchEventsFromSupabase() {
+            const container = document.getElementById('events-list');
+            if (!container) return;
+
+            const { data, error } = await supabaseClient
+                .from('events')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching events:", error.message);
+                return;
+            }
+
+            events = data || [];
+            renderEventsUI();
+        }
+
+        function renderEventsUI() {
+            const container = document.getElementById('events-list');
+            if (!container) return;
+            container.innerHTML = "";
+
+            if (events.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-sm italic">Peace on the horizon. Check back soon.</p>`;
+                return;
+            }
+
+            events.forEach(ev => {
+                const card = document.createElement('div');
+                card.className = "p-3 bg-slate-950 rounded-lg border border-slate-850 hover:border-gold-900/50 transition-colors";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-gold-500 uppercase tracking-wider">${ev.event_date} @ ${ev.event_time}</span>
+                    </div>
+                    <h4 class="text-sm font-bold text-slate-200 mt-1">${ev.title}</h4>
+                    <p class="text-slate-400 text-[11px] mt-1">${ev.description || ''}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function addNewEvent() {
+            const titleIn = document.getElementById('new-event-title');
+            const dateIn = document.getElementById('new-event-date');
+            const timeIn = document.getElementById('new-event-time');
+            const descIn = document.getElementById('new-event-desc');
+
+            if (!titleIn.value || !dateIn.value) {
+                showNotification("Event requires a Title and Date.", "error");
+                return;
+            }
+
+            showNotification("Publishing expedition...");
+
+            const { error } = await supabaseClient.from('events').insert([{
+                title: titleIn.value.trim(),
+                event_date: dateIn.value.trim(),
+                event_time: timeIn.value.trim() || "8:00 PM",
+                description: descIn.value.trim() || "Regular excursion parameters."
+            }]);
+
+            if (error) {
+                showNotification("Error publishing event: " + error.message, "error");
+                return;
+            }
+
+            showNotification("Upcoming Expedition published live!");
+            await fetchEventsFromSupabase();
+
+            titleIn.value = "";
+            dateIn.value = "";
+            timeIn.value = "";
+            descIn.value = "";
+        }
+
+        // Fetch Live Class Recruitment Priorities from Supabase
+        async function fetchClassPrioritiesFromSupabase() {
+            const { data, error } = await supabaseClient
+                .from('class_priorities')
+                .select('*');
+
+            if (error) {
+                console.error("Error fetching priorities:", error.message);
+                return;
+            }
+
+            priorities = {};
+            if (data) {
+                data.forEach(item => {
+                    priorities[item.class_name] = item.priority_level;
+                });
+            }
+
+            renderRecruitmentNeedsUI();
+            renderOfficerPrioritiesUI();
+        }
+
+        function renderRecruitmentNeedsUI() {
+            const container = document.getElementById('recruitment-needs-list');
+            if (!container) return;
+            container.innerHTML = "";
+
+            const sorted = Object.entries(priorities).sort((a, b) => {
+                const map = { "High": 3, "Medium": 2, "Low": 1 };
+                return (map[b[1]] || 0) - (map[a[1]] || 0);
+            });
+
+            if (sorted.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-sm italic">All class roles open.</p>`;
+                return;
+            }
+
+            sorted.forEach(([cls, prio]) => {
+                let badgeClass = "bg-red-950/80 border-red-800/50 text-red-400";
+                if (prio === "Medium") badgeClass = "bg-amber-950/80 border-amber-800/50 text-amber-400";
+                if (prio === "Low") badgeClass = "bg-slate-900 border-slate-800 text-slate-400";
+
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800";
+                row.innerHTML = `
+                    <span class="text-sm font-medium text-slate-200">${cls}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass}">${prio.toUpperCase()}</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function renderOfficerPrioritiesUI() {
+            const container = document.getElementById('officer-priority-list');
+            if (!container) return;
+            container.innerHTML = "";
+
+            MM_CLASSES.forEach(cls => {
+                const val = priorities[cls] || "Low";
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-2 bg-slate-950 rounded border border-slate-900 text-sm";
+                row.innerHTML = `
+                    <span class="text-slate-300">${cls}</span>
+                    <div class="flex items-center space-x-2">
+                        <select onchange="updateClassPriority('${cls}', this.value)" class="bg-slate-900 border border-slate-800 text-[11px] rounded px-2 py-1 text-slate-300">
+                            <option value="High" ${val === 'High' ? 'selected' : ''}>High</option>
+                            <option value="Medium" ${val === 'Medium' ? 'selected' : ''}>Medium</option>
+                            <option value="Low" ${val === 'Low' ? 'selected' : ''}>Low</option>
+                        </select>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        async function updateClassPriority(className, priorityLevel) {
+            showNotification(`Updating ${className} priority...`);
+
+            const { error } = await supabaseClient
+                .from('class_priorities')
+                .upsert({ class_name: className, priority_level: priorityLevel }, { onConflict: 'class_name' });
+
+            if (error) {
+                showNotification("Error updating priority: " + error.message, "error");
+            } else {
+                showNotification(`Updated priority for ${className} to ${priorityLevel}.`);
+                await fetchClassPrioritiesFromSupabase();
+            }
         }
 
         // Submit Application
@@ -997,7 +1155,7 @@
             fetchRosterFromSupabase();
         }
 
-        // Helper UI Functions
+        // UI Helpers
         function populateClassSelects() {
             const rosterFilterSelect = document.getElementById('roster-class-filter');
             const appClassSelect = document.getElementById('app-class');
@@ -1060,116 +1218,6 @@
 
         function toggleMobileMenu() {
             document.getElementById('mobile-menu').classList.toggle('hidden');
-        }
-
-        function renderRecruitmentNeeds() {
-            const container = document.getElementById('recruitment-needs-list');
-            if (!container) return;
-            container.innerHTML = "";
-
-            const sorted = Object.entries(priorities).sort((a, b) => {
-                const map = { "High": 3, "Medium": 2, "Low": 1 };
-                return map[b[1]] - map[a[1]];
-            });
-
-            sorted.forEach(([cls, prio]) => {
-                let badgeClass = "bg-red-950/80 border-red-800/50 text-red-400";
-                if (prio === "Medium") badgeClass = "bg-amber-950/80 border-amber-800/50 text-amber-400";
-                if (prio === "Low") badgeClass = "bg-slate-900 border-slate-800 text-slate-400";
-
-                const row = document.createElement('div');
-                row.className = "flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800";
-                row.innerHTML = `
-                    <span class="text-sm font-medium text-slate-200">${cls}</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass}">${prio.toUpperCase()}</span>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        function renderEvents() {
-            const container = document.getElementById('events-list');
-            if (!container) return;
-            container.innerHTML = "";
-
-            if (events.length === 0) {
-                container.innerHTML = `<p class="text-slate-500 text-sm italic">Peace on the horizon. Check back soon.</p>`;
-                return;
-            }
-
-            events.forEach(ev => {
-                const card = document.createElement('div');
-                card.className = "p-3 bg-slate-950 rounded-lg border border-slate-850 hover:border-gold-900/50 transition-colors";
-                card.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-gold-500 uppercase tracking-wider">${ev.date} @ ${ev.time}</span>
-                    </div>
-                    <h4 class="text-sm font-bold text-slate-200 mt-1">${ev.title}</h4>
-                    <p class="text-slate-400 text-[11px] mt-1">${ev.desc}</p>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderOfficerPriorities() {
-            const container = document.getElementById('officer-priority-list');
-            if (!container) return;
-            container.innerHTML = "";
-
-            MM_CLASSES.forEach(cls => {
-                const val = priorities[cls] || "Low";
-                const row = document.createElement('div');
-                row.className = "flex items-center justify-between p-2 bg-slate-950 rounded border border-slate-900 text-sm";
-                row.innerHTML = `
-                    <span class="text-slate-300">${cls}</span>
-                    <div class="flex items-center space-x-2">
-                        <select onchange="updateClassPriority('${cls}', this.value)" class="bg-slate-900 border border-slate-800 text-[11px] rounded px-2 py-1 text-slate-300">
-                            <option value="High" ${val === 'High' ? 'selected' : ''}>High</option>
-                            <option value="Medium" ${val === 'Medium' ? 'selected' : ''}>Medium</option>
-                            <option value="Low" ${val === 'Low' ? 'selected' : ''}>Low</option>
-                        </select>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        function updateClassPriority(className, priorityLevel) {
-            priorities[className] = priorityLevel;
-            localStorage.setItem('gms_priorities', JSON.stringify(priorities));
-            renderRecruitmentNeeds();
-            showNotification(`Updated priority for ${className} to ${priorityLevel}.`);
-        }
-
-        function addNewEvent() {
-            const titleIn = document.getElementById('new-event-title');
-            const dateIn = document.getElementById('new-event-date');
-            const timeIn = document.getElementById('new-event-time');
-            const descIn = document.getElementById('new-event-desc');
-
-            if (!titleIn.value || !dateIn.value) {
-                showNotification("Event requires a Title and Date.", "error");
-                return;
-            }
-
-            const evObj = {
-                id: 'e_' + Date.now(),
-                title: titleIn.value.trim(),
-                date: dateIn.value.trim(),
-                time: timeIn.value.trim() || "8:00 PM",
-                desc: descIn.value.trim() || "Regular excursion parameters."
-            };
-
-            events.push(evObj);
-            localStorage.setItem('gms_events', JSON.stringify(events));
-
-            showNotification("Upcoming Expedition published!");
-            renderEvents();
-
-            titleIn.value = "";
-            dateIn.value = "";
-            timeIn.value = "";
-            descIn.value = "";
         }
     </script>
 </body>
