@@ -1,7 +1,6 @@
 // Authentication & Discord OAuth Sync
 async function loginWithDiscord() {
     try {
-        console.log("loginWithDiscord initiated...");
         if (typeof showNotification === 'function') {
             showNotification("Connecting to Discord OAuth...", "success");
         }
@@ -32,9 +31,7 @@ async function loginWithDiscord() {
             return;
         }
 
-        // Force browser redirect to Discord OAuth URL if returned
         if (data && data.url) {
-            console.log("Redirecting to OAuth URL:", data.url);
             window.location.href = data.url;
         }
     } catch (err) {
@@ -77,16 +74,21 @@ async function updateAuthUI(session) {
             if (discordHeaderBtn) discordHeaderBtn.classList.add('hidden');
 
             const roleData = await checkDiscordRoles(session);
-            const isOfficer = roleData.isOfficer || roleData.isGrandmaster;
-            const assignedRole = roleData.assignedRole;
+
+            await syncUserToDatabaseRoster(session, roleData);
+
+            // Officer access granted if verified by Discord OR if role in database is Grandmaster / Knight-Commander
+            const isOfficer = roleData.isOfficer || 
+                              roleData.isGrandmaster || 
+                              currentUserProfile?.role === 'Grandmaster' || 
+                              currentUserProfile?.role === 'Knight-Commander';
 
             if (userNameSpan) {
-                userNameSpan.textContent = session.user.user_metadata?.full_name || 
+                userNameSpan.textContent = currentUserProfile?.in_game_name || 
+                                           session.user.user_metadata?.full_name || 
                                            session.user.user_metadata?.custom_claims?.global_name || 
                                            session.user.email || "Member";
             }
-
-            await syncUserToDatabaseRoster(session, assignedRole);
 
             if (isOfficer) {
                 if (typeof showNotification === 'function') {
@@ -119,11 +121,11 @@ async function updateAuthUI(session) {
 }
 
 async function checkDiscordRoles(session) {
-    if (!session) return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
+    if (!session) return { roleVerified: false, assignedRole: null, isOfficer: false, isGrandmaster: false };
 
     const providerToken = session.provider_token;
     if (!providerToken || !DISCORD_GUILD_ID) {
-        return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
+        return { roleVerified: false, assignedRole: null, isOfficer: false, isGrandmaster: false };
     }
 
     try {
@@ -131,7 +133,10 @@ async function checkDiscordRoles(session) {
             headers: { Authorization: `Bearer ${providerToken}` }
         });
 
-        if (!response.ok) return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
+        if (!response.ok) {
+            console.warn("Discord API response status:", response.status);
+            return { roleVerified: false, assignedRole: null, isOfficer: false, isGrandmaster: false };
+        }
 
         const memberData = await response.json();
         const userRoles = memberData.roles || [];
@@ -145,9 +150,12 @@ async function checkDiscordRoles(session) {
         };
 
         let assignedRole = 'Squire';
-        if (userRoles.includes(ROLE_IDS.GRANDMASTER)) {
+        let isGrandmaster = userRoles.includes(ROLE_IDS.GRANDMASTER);
+        let isOfficer = userRoles.includes(ROLE_IDS.OFFICER) || isGrandmaster;
+
+        if (isGrandmaster) {
             assignedRole = 'Grandmaster';
-        } else if (userRoles.includes(ROLE_IDS.OFFICER)) {
+        } else if (isOfficer) {
             assignedRole = 'Knight-Commander';
         } else if (userRoles.includes(ROLE_IDS.KNIGHT)) {
             assignedRole = 'Knight';
@@ -158,20 +166,21 @@ async function checkDiscordRoles(session) {
         }
 
         return {
+            roleVerified: true,
             assignedRole,
-            isGrandmaster: userRoles.includes(ROLE_IDS.GRANDMASTER),
-            isOfficer: userRoles.includes(ROLE_IDS.OFFICER)
+            isGrandmaster,
+            isOfficer
         };
     } catch (err) {
         console.error("Error checking Discord roles:", err);
-        return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
+        return { roleVerified: false, assignedRole: null, isOfficer: false, isGrandmaster: false };
     }
 }
 
-async function syncUserToDatabaseRoster(session, assignedRole) {
+async function syncUserToDatabaseRoster(session, roleData) {
     const userMeta = session.user.user_metadata;
     const discordId = userMeta.provider_id || session.user.identities?.[0]?.id || userMeta.sub;
-    const discordName = userMeta.full_name || userMeta.name || userMeta.email || "Squire";
+    const discordName = userMeta.full_name || userMeta.name || userMeta.custom_claims?.global_name || userMeta.email || "Squire";
 
     const { data: existingMember } = await supabaseClient
         .from('guild_members')
@@ -180,26 +189,32 @@ async function syncUserToDatabaseRoster(session, assignedRole) {
         .single();
 
     if (!existingMember) {
+        const initialRole = (roleData.roleVerified && roleData.assignedRole) ? roleData.assignedRole : 'Squire';
+
         const { data: newMember } = await supabaseClient.from('guild_members').insert([{
             discord_id: discordId,
             username: discordName,
             in_game_name: discordName,
             character_class: 'Paladin',
             character_level: 1,
-            role: assignedRole,
+            role: initialRole,
             focus: 'PvE Dungeons'
         }]).select().single();
 
         currentUserProfile = newMember;
-        if (typeof fetchRosterFromSupabase === 'function') await fetchRosterFromSupabase();
     } else {
-        if (existingMember.role !== assignedRole) {
+        // ONLY update database role if Discord role check was explicitly verified!
+        if (roleData.roleVerified && roleData.assignedRole && existingMember.role !== roleData.assignedRole) {
             await supabaseClient.from('guild_members')
-                .update({ role: assignedRole })
+                .update({ role: roleData.assignedRole })
                 .eq('discord_id', discordId);
-            existingMember.role = assignedRole;
+            existingMember.role = roleData.assignedRole;
         }
         currentUserProfile = existingMember;
+    }
+
+    if (typeof fetchRosterFromSupabase === 'function') {
+        await fetchRosterFromSupabase();
     }
 
     populateProfileForm();
