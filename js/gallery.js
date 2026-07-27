@@ -1,21 +1,5 @@
 // Victory Archive & Screenshot Gallery with Officer Management
-let galleryItems = [
-    {
-        id: "1",
-        title: "Dungeon Excursion Victory",
-        date: "May 12, 2026",
-        caption: "The vanguard squad clearing the deeper crypts during the test phase.",
-        imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80"
-    },
-    {
-        id: "2",
-        title: "Sierra's The Realm Legacy (1996)",
-        date: "Est. 1996",
-        caption: "Founding members of the Knights of the Golden Spoon gathered in Sierra's online realm.",
-        imageUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80"
-    }
-];
-
+let galleryItems = [];
 let editingGalleryId = null;
 
 async function fetchGalleryFromSupabase() {
@@ -24,7 +8,7 @@ async function fetchGalleryFromSupabase() {
         .select('*')
         .order('created_at', { ascending: false });
 
-    if (!error && data && data.length > 0) {
+    if (!error && data) {
         galleryItems = data;
     }
 
@@ -42,10 +26,10 @@ function renderGalleryUI() {
     }
 
     container.innerHTML = galleryItems.map(item => `
-        <div class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 shadow-xl group hover:border-gold-800/60 transition-all">
-            <div class="h-48 overflow-hidden bg-slate-950 relative">
+        <div class="bg-[#0a0f1d] rounded-xl overflow-hidden border border-gold-900/30 shadow-xl group hover:border-gold-800/60 transition-all">
+            <div class="h-48 overflow-hidden bg-[#070b12] relative">
                 <img src="${item.imageUrl || item.image_url}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                <div class="absolute bottom-2 right-2 bg-slate-950/80 px-2 py-0.5 rounded text-[10px] text-gold-400 font-mono">${item.date}</div>
+                <div class="absolute bottom-2 right-2 bg-[#070b12]/80 px-2 py-0.5 rounded text-[10px] text-gold-400 font-mono">${item.date}</div>
             </div>
             <div class="p-5">
                 <h3 class="text-lg font-bold font-serif text-slate-100 group-hover:text-gold-300 transition-colors">${item.title}</h3>
@@ -65,7 +49,7 @@ function renderOfficerGalleryManagerUI() {
     }
 
     container.innerHTML = galleryItems.map(item => `
-        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between gap-3 text-xs">
+        <div class="p-3 bg-[#070b12] rounded-lg border border-gold-900/30 flex items-center justify-between gap-3 text-xs">
             <div class="truncate">
                 <span class="text-gold-500 font-bold">${item.title}</span>
                 <span class="text-slate-400 block text-[10px]">${item.date}</span>
@@ -83,7 +67,7 @@ function renderOfficerGalleryManagerUI() {
 }
 
 function openEditGallery(id) {
-    const item = galleryItems.find(g => g.id === id);
+    const item = galleryItems.find(g => g.id == id);
     if (!item) return;
 
     editingGalleryId = id;
