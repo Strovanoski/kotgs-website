@@ -7,10 +7,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     populateClassSelects();
 
     // Isolated content fetches
-    try { if (typeof fetchRosterFromSupabase === 'function') await fetchRosterFromSupabase(); } catch(e) { console.error(e); }
-    try { if (typeof fetchClassPrioritiesFromSupabase === 'function') await fetchClassPrioritiesFromSupabase(); } catch(e) { console.error(e); }
-    try { if (typeof fetchEventsFromSupabase === 'function') await fetchEventsFromSupabase(); } catch(e) { console.error(e); }
-    try { if (typeof fetchNewsFromSupabase === 'function') await fetchNewsFromSupabase(); } catch(e) { console.error(e); }
+    try { if (typeof fetchRosterFromSupabase === 'function') await fetchRosterFromSupabase(); } catch(e) { console.error("Roster error:", e); }
+    try { if (typeof fetchClassPrioritiesFromSupabase === 'function') await fetchClassPrioritiesFromSupabase(); } catch(e) { console.error("Priorities error:", e); }
+    try { if (typeof fetchEventsFromSupabase === 'function') await fetchEventsFromSupabase(); } catch(e) { console.error("Events error:", e); }
+    try { if (typeof fetchNewsFromSupabase === 'function') await fetchNewsFromSupabase(); } catch(e) { console.error("News error:", e); }
 
     try {
         if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
@@ -50,12 +50,18 @@ function switchTab(tabId) {
     const targetSection = document.getElementById(`view-${tabId}`);
     if (targetSection) targetSection.classList.remove('hidden');
 
+    // Preserve the 'hidden' class on nav buttons so Officers/Profile buttons stay hidden when unauthenticated
     document.querySelectorAll('header nav button').forEach(btn => {
-        btn.className = "px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-[#0c1222]/40";
+        const isHidden = btn.classList.contains('hidden');
+        const baseClass = "px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-[#0c1222]/40";
+        btn.className = isHidden ? `hidden ${baseClass}` : baseClass;
     });
+
     const activeBtn = document.getElementById(`nav-${tabId}`);
     if (activeBtn) {
-        activeBtn.className = "px-3 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-[#0c1222]/80 border border-gold-900/30";
+        const isHidden = activeBtn.classList.contains('hidden');
+        const activeClass = "px-3 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-[#0c1222]/80 border border-gold-900/30";
+        activeBtn.className = isHidden ? `hidden ${activeClass}` : activeClass;
     }
 }
 

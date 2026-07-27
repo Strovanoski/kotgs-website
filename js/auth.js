@@ -1,17 +1,17 @@
 // Authentication & Discord OAuth Sync
 async function loginWithDiscord() {
     try {
+        console.log("loginWithDiscord initiated...");
         if (typeof showNotification === 'function') {
             showNotification("Connecting to Discord OAuth...", "success");
         }
 
         if (typeof supabaseClient === 'undefined' || !supabaseClient || !supabaseClient.auth) {
-            console.error("Supabase client is not properly initialized.");
-            alert("Error: Supabase client is not initialized.");
+            console.error("Supabase client is not initialized.");
+            alert("Error: Supabase client is not initialized. Please check config.js.");
             return;
         }
 
-        // Dynamically match site origin and path
         const currentRedirect = window.location.origin + window.location.pathname;
 
         const { data, error } = await supabaseClient.auth.signInWithOAuth({
@@ -29,6 +29,13 @@ async function loginWithDiscord() {
             } else {
                 alert("Login error: " + error.message);
             }
+            return;
+        }
+
+        // Force browser redirect to Discord OAuth URL if returned
+        if (data && data.url) {
+            console.log("Redirecting to OAuth URL:", data.url);
+            window.location.href = data.url;
         }
     } catch (err) {
         console.error("Unexpected authentication error:", err);
@@ -43,6 +50,7 @@ async function logout() {
         if (typeof showNotification === 'function') {
             showNotification("Signed out successfully.");
         }
+        window.location.reload();
     } catch (err) {
         console.error("Error signing out:", err);
     }
