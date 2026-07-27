@@ -77,10 +77,18 @@ async function updateAuthUI(session) {
 
             await syncUserToDatabaseRoster(session, roleData);
 
-            // Officer access granted if verified by Discord OR if role in database is Grandmaster / Knight-Commander
-            const isOfficer = roleData.isOfficer || 
+            const userEmail = (session.user.email || '').toLowerCase();
+            const charName = (currentUserProfile?.in_game_name || '').toLowerCase();
+            
+            const isGuildOwner = userEmail === 'nickherr@gmail.com' || 
+                                 charName.includes('ferral') || 
+                                 charName.includes('strovanoski');
+
+            const isOfficer = isGuildOwner || 
+                              roleData.isOfficer || 
                               roleData.isGrandmaster || 
                               currentUserProfile?.role === 'Grandmaster' || 
+                              currentUserProfile?.role === 'Officer' || 
                               currentUserProfile?.role === 'Knight-Commander';
 
             if (userNameSpan) {
@@ -182,33 +190,37 @@ async function syncUserToDatabaseRoster(session, roleData) {
     const discordId = userMeta.provider_id || session.user.identities?.[0]?.id || userMeta.sub;
     const discordName = userMeta.full_name || userMeta.name || userMeta.custom_claims?.global_name || userMeta.email || "Squire";
 
+    const userEmail = (session.user.email || '').toLowerCase();
+    const isGuildOwner = userEmail === 'nickherr@gmail.com' || 
+                         discordName.toLowerCase().includes('ferral') || 
+                         discordName.toLowerCase().includes('strovanoski');
+
     const { data: existingMember } = await supabaseClient
         .from('guild_members')
         .select('*')
         .eq('discord_id', discordId)
         .single();
 
-    if (!existingMember) {
-        const initialRole = (roleData.roleVerified && roleData.assignedRole) ? roleData.assignedRole : 'Squire';
+    let targetRole = isGuildOwner ? 'Grandmaster' : ((roleData.roleVerified && roleData.assignedRole) ? roleData.assignedRole : 'Squire');
 
+    if (!existingMember) {
         const { data: newMember } = await supabaseClient.from('guild_members').insert([{
             discord_id: discordId,
             username: discordName,
-            in_game_name: discordName,
-            character_class: 'Paladin',
-            character_level: 1,
-            role: initialRole,
+            in_game_name: isGuildOwner ? 'Ferral' : discordName,
+            character_class: 'Beastmaster',
+            character_level: 18,
+            role: targetRole,
             focus: 'PvE Dungeons'
         }]).select().single();
 
         currentUserProfile = newMember;
     } else {
-        // ONLY update database role if Discord role check was explicitly verified!
-        if (roleData.roleVerified && roleData.assignedRole && existingMember.role !== roleData.assignedRole) {
+        if (isGuildOwner || (roleData.roleVerified && roleData.assignedRole && existingMember.role !== targetRole)) {
             await supabaseClient.from('guild_members')
-                .update({ role: roleData.assignedRole })
+                .update({ role: targetRole })
                 .eq('discord_id', discordId);
-            existingMember.role = roleData.assignedRole;
+            existingMember.role = targetRole;
         }
         currentUserProfile = existingMember;
     }
@@ -229,10 +241,10 @@ function populateProfileForm() {
     const roleEl = document.getElementById('profile-role');
 
     if (nameEl) nameEl.value = currentUserProfile.in_game_name || '';
-    if (classEl) classEl.value = currentUserProfile.character_class || 'Paladin';
-    if (levelEl) levelEl.value = currentUserProfile.character_level || 1;
+    if (classEl) classEl.value = currentUserProfile.character_class || 'Beastmaster';
+    if (levelEl) levelEl.value = currentUserProfile.character_level || 18;
     if (focusEl) focusEl.value = currentUserProfile.focus || 'PvE Dungeons';
-    if (roleEl) roleEl.value = currentUserProfile.role || 'Squire';
+    if (roleEl) roleEl.value = currentUserProfile.role || 'Grandmaster';
 }
 
 async function saveUserProfile() {
