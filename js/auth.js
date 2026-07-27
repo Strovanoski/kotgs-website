@@ -1,74 +1,122 @@
 // Authentication & Discord OAuth Sync
 async function loginWithDiscord() {
-    await supabaseClient.auth.signInWithOAuth({
-        provider: 'discord',
-        options: {
-            redirectTo: 'https://strovanoski.github.io/kotgs-website/',
-            scopes: 'identify email guilds.members.read'
+    try {
+        if (typeof showNotification === 'function') {
+            showNotification("Connecting to Discord OAuth...", "success");
         }
-    });
+
+        if (typeof supabaseClient === 'undefined' || !supabaseClient || !supabaseClient.auth) {
+            console.error("Supabase client is not properly initialized.");
+            alert("Error: Supabase client is not initialized.");
+            return;
+        }
+
+        // Dynamically match site origin and path
+        const currentRedirect = window.location.origin + window.location.pathname;
+
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'discord',
+            options: {
+                redirectTo: currentRedirect,
+                scopes: 'identify email guilds.members.read'
+            }
+        });
+
+        if (error) {
+            console.error("Discord OAuth Error:", error);
+            if (typeof showNotification === 'function') {
+                showNotification("Discord login error: " + error.message, "error");
+            } else {
+                alert("Login error: " + error.message);
+            }
+        }
+    } catch (err) {
+        console.error("Unexpected authentication error:", err);
+        alert("Authentication error: " + err.message);
+    }
 }
 
 async function logout() {
-    await supabaseClient.auth.signOut();
-    currentUserProfile = null;
-    showNotification("Signed out successfully.");
+    try {
+        await supabaseClient.auth.signOut();
+        currentUserProfile = null;
+        if (typeof showNotification === 'function') {
+            showNotification("Signed out successfully.");
+        }
+    } catch (err) {
+        console.error("Error signing out:", err);
+    }
 }
 
 async function updateAuthUI(session) {
-    const loggedOutHeader = document.getElementById('auth-header-logged-out');
-    const loggedInHeader = document.getElementById('auth-header-logged-in');
-    const userNameSpan = document.getElementById('header-user-name');
-    const profileNavBtn = document.getElementById('nav-profile');
-    const mobileProfileBtn = document.getElementById('mobile-nav-profile');
-    const officerNavBtn = document.getElementById('nav-officer');
-    const mobileOfficerBtn = document.getElementById('mobile-nav-officer');
-    const discordHeaderBtn = document.getElementById('discord-header-btn');
-    const viewOfficer = document.getElementById('view-officer');
-    const viewProfile = document.getElementById('view-profile');
+    try {
+        const loggedOutHeader = document.getElementById('auth-header-logged-out');
+        const loggedInHeader = document.getElementById('auth-header-logged-in');
+        const userNameSpan = document.getElementById('header-user-name');
+        const profileNavBtn = document.getElementById('nav-profile');
+        const mobileProfileBtn = document.getElementById('mobile-nav-profile');
+        const officerNavBtn = document.getElementById('nav-officer');
+        const mobileOfficerBtn = document.getElementById('mobile-nav-officer');
+        const discordHeaderBtn = document.getElementById('discord-header-btn');
+        const viewOfficer = document.getElementById('view-officer');
+        const viewProfile = document.getElementById('view-profile');
 
-    if (session) {
-        if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
-        if (loggedInHeader) loggedInHeader.classList.remove('hidden');
-        if (profileNavBtn) profileNavBtn.classList.remove('hidden');
-        if (mobileProfileBtn) mobileProfileBtn.classList.remove('hidden');
-        if (discordHeaderBtn) discordHeaderBtn.classList.add('hidden');
+        if (session && session.user) {
+            if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
+            if (loggedInHeader) loggedInHeader.classList.remove('hidden');
+            if (profileNavBtn) profileNavBtn.classList.remove('hidden');
+            if (mobileProfileBtn) mobileProfileBtn.classList.remove('hidden');
+            if (discordHeaderBtn) discordHeaderBtn.classList.add('hidden');
 
-        const roleData = await checkDiscordRoles(session);
-        const isOfficer = roleData.isOfficer || roleData.isGrandmaster;
-        
-        const assignedRole = roleData.assignedRole;
+            const roleData = await checkDiscordRoles(session);
+            const isOfficer = roleData.isOfficer || roleData.isGrandmaster;
+            const assignedRole = roleData.assignedRole;
 
-        if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
+            if (userNameSpan) {
+                userNameSpan.textContent = session.user.user_metadata?.full_name || 
+                                           session.user.user_metadata?.custom_claims?.global_name || 
+                                           session.user.email || "Member";
+            }
 
-        await syncUserToDatabaseRoster(session, assignedRole);
+            await syncUserToDatabaseRoster(session, assignedRole);
 
-        if (isOfficer) {
-            showNotification("Welcome Officer! Command Center unlocked.", "success");
-            if (officerNavBtn) officerNavBtn.classList.remove('hidden');
-            if (mobileOfficerBtn) mobileOfficerBtn.classList.remove('hidden');
-            fetchApplicationsFromSupabase();
+            if (isOfficer) {
+                if (typeof showNotification === 'function') {
+                    showNotification("Welcome Officer! Command Center unlocked.", "success");
+                }
+                if (officerNavBtn) officerNavBtn.classList.remove('hidden');
+                if (mobileOfficerBtn) mobileOfficerBtn.classList.remove('hidden');
+                if (typeof fetchApplicationsFromSupabase === 'function') {
+                    fetchApplicationsFromSupabase();
+                }
+            } else {
+                if (officerNavBtn) officerNavBtn.classList.add('hidden');
+                if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
+                if (viewOfficer) viewOfficer.classList.add('hidden');
+            }
         } else {
+            if (loggedOutHeader) loggedOutHeader.classList.remove('hidden');
+            if (loggedInHeader) loggedInHeader.classList.add('hidden');
+            if (profileNavBtn) profileNavBtn.classList.add('hidden');
+            if (mobileProfileBtn) mobileProfileBtn.classList.add('hidden');
             if (officerNavBtn) officerNavBtn.classList.add('hidden');
             if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
+            if (discordHeaderBtn) discordHeaderBtn.classList.remove('hidden');
             if (viewOfficer) viewOfficer.classList.add('hidden');
+            if (viewProfile) viewProfile.classList.add('hidden');
         }
-    } else {
-        if (loggedOutHeader) loggedOutHeader.classList.remove('hidden');
-        if (loggedInHeader) loggedInHeader.classList.add('hidden');
-        if (profileNavBtn) profileNavBtn.classList.add('hidden');
-        if (mobileProfileBtn) mobileProfileBtn.classList.add('hidden');
-        if (officerNavBtn) officerNavBtn.classList.add('hidden');
-        if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
-        if (discordHeaderBtn) discordHeaderBtn.classList.remove('hidden');
-        if (viewOfficer) viewOfficer.classList.add('hidden');
-        if (viewProfile) viewProfile.classList.add('hidden');
+    } catch (err) {
+        console.error("Error in updateAuthUI:", err);
     }
 }
 
 async function checkDiscordRoles(session) {
+    if (!session) return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
+
     const providerToken = session.provider_token;
-    if (!providerToken || !DISCORD_GUILD_ID) return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
+    if (!providerToken || !DISCORD_GUILD_ID) {
+        return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
+    }
 
     try {
         const response = await fetch(`https://discord.com/api/v10/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
@@ -80,7 +128,6 @@ async function checkDiscordRoles(session) {
         const memberData = await response.json();
         const userRoles = memberData.roles || [];
 
-        // Exact Discord Role ID Mapping
         const ROLE_IDS = {
             GRANDMASTER: "1531247534104907919",
             OFFICER: "1531248101573136474",
@@ -136,7 +183,7 @@ async function syncUserToDatabaseRoster(session, assignedRole) {
         }]).select().single();
 
         currentUserProfile = newMember;
-        await fetchRosterFromSupabase();
+        if (typeof fetchRosterFromSupabase === 'function') await fetchRosterFromSupabase();
     } else {
         if (existingMember.role !== assignedRole) {
             await supabaseClient.from('guild_members')
@@ -152,11 +199,17 @@ async function syncUserToDatabaseRoster(session, assignedRole) {
 
 function populateProfileForm() {
     if (!currentUserProfile) return;
-    document.getElementById('profile-char-name').value = currentUserProfile.in_game_name || '';
-    document.getElementById('profile-class').value = currentUserProfile.character_class || 'Paladin';
-    document.getElementById('profile-level').value = currentUserProfile.character_level || 1;
-    document.getElementById('profile-focus').value = currentUserProfile.focus || 'PvE Dungeons';
-    document.getElementById('profile-role').value = currentUserProfile.role || 'Squire';
+    const nameEl = document.getElementById('profile-char-name');
+    const classEl = document.getElementById('profile-class');
+    const levelEl = document.getElementById('profile-level');
+    const focusEl = document.getElementById('profile-focus');
+    const roleEl = document.getElementById('profile-role');
+
+    if (nameEl) nameEl.value = currentUserProfile.in_game_name || '';
+    if (classEl) classEl.value = currentUserProfile.character_class || 'Paladin';
+    if (levelEl) levelEl.value = currentUserProfile.character_level || 1;
+    if (focusEl) focusEl.value = currentUserProfile.focus || 'PvE Dungeons';
+    if (roleEl) roleEl.value = currentUserProfile.role || 'Squire';
 }
 
 async function saveUserProfile() {
@@ -190,7 +243,6 @@ async function saveUserProfile() {
         currentUserProfile.character_class = charClass;
         currentUserProfile.character_level = charLevel;
         currentUserProfile.focus = focus;
-        await fetchRosterFromSupabase();
+        if (typeof fetchRosterFromSupabase === 'function') await fetchRosterFromSupabase();
     }
 }
-```[cite: 8]
