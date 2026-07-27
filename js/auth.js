@@ -31,9 +31,9 @@ async function updateAuthUI(session) {
         if (mobileProfileBtn) mobileProfileBtn.classList.remove('hidden');
 
         const roleData = await checkDiscordRoles(session);
-        const isOfficer = roleData.isGuildLeader || roleData.isOfficer;
+        const isOfficer = roleData.isOfficer || roleData.isGrandmaster;
         
-        const assignedRole = roleData.isGuildLeader ? 'Grandmaster' : (roleData.isOfficer ? 'Knight-Commander' : 'Squire');
+        const assignedRole = roleData.assignedRole;
 
         if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
 
@@ -63,25 +63,48 @@ async function updateAuthUI(session) {
 
 async function checkDiscordRoles(session) {
     const providerToken = session.provider_token;
-    if (!providerToken || !DISCORD_GUILD_ID) return { isGuildLeader: false, isOfficer: false };
+    if (!providerToken || !DISCORD_GUILD_ID) return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
 
     try {
         const response = await fetch(`https://discord.com/api/v10/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
             headers: { Authorization: `Bearer ${providerToken}` }
         });
 
-        if (!response.ok) return { isGuildLeader: false, isOfficer: false };
+        if (!response.ok) return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
 
         const memberData = await response.json();
         const userRoles = memberData.roles || [];
 
+        // Exact Discord Role ID Mapping
+        const ROLE_IDS = {
+            GRANDMASTER: "1531247534104907919",
+            OFFICER: "1531248101573136474",
+            KNIGHT: "1531249654715519088",
+            SQUIRE: "1531285376730398872",
+            APPLICANT: "1531286196653789298"
+        };
+
+        let assignedRole = 'Squire';
+        if (userRoles.includes(ROLE_IDS.GRANDMASTER)) {
+            assignedRole = 'Grandmaster';
+        } else if (userRoles.includes(ROLE_IDS.OFFICER)) {
+            assignedRole = 'Knight-Commander';
+        } else if (userRoles.includes(ROLE_IDS.KNIGHT)) {
+            assignedRole = 'Knight';
+        } else if (userRoles.includes(ROLE_IDS.SQUIRE)) {
+            assignedRole = 'Squire';
+        } else if (userRoles.includes(ROLE_IDS.APPLICANT)) {
+            assignedRole = 'Applicant';
+        }
+
         return {
-            isGuildLeader: userRoles.includes(GUILD_LEADER_ROLE_ID),
-            isOfficer: userRoles.includes(OFFICER_ROLE_ID)
+            assignedRole,
+            isGrandmaster: userRoles.includes(ROLE_IDS.GRANDMASTER),
+            isOfficer: userRoles.includes(ROLE_IDS.OFFICER)
         };
     } catch (err) {
         console.error("Error checking Discord roles:", err);
-        return { isGuildLeader: false, isOfficer: false };
+        return { assignedRole: 'Squire', isOfficer: false, isGrandmaster: false };
     }
 }
 
