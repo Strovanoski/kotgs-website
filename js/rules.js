@@ -61,6 +61,7 @@ async function fetchRulesAndOathFromSupabase() {
 function renderOathUI() {
     document.querySelectorAll('.oath-quote-text').forEach(el => {
         el.textContent = guildOathText;
+        el.classList.add('whitespace-pre-line');
     });
 }
 
