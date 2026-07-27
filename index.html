@@ -131,7 +131,7 @@
         </div>
     </header>
 
-    <!-- Global Success/Error Notifications Container -->
+    <!-- Global Notifications Container -->
     <div id="notification-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full"></div>
 
     <!-- Main Content Area -->
@@ -295,6 +295,7 @@
                             <option value="Officer">Officer</option>
                             <option value="Spoon Knight">Spoon Knight</option>
                             <option value="Initiate">Initiate</option>
+                            <option value="Member">Member</option>
                         </select>
                     </div>
                 </div>
@@ -475,50 +476,26 @@
         const DISCORD_GUILD_ID = "1527962374366040084";
         const GUILD_LEADER_ROLE_ID = "1531247534104907919";
         const OFFICER_ROLE_ID = "1531248101573136474";
-        const GUILD_MEMBER_ROLE_ID = "1531249654715519088";
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Official 18 playable classes for Monsters & Memories
         const MM_CLASSES = [
             "Bard", "Beastmaster", "Cleric", "Druid", "Elementalist", "Enchanter",
             "Fighter", "Inquisitor", "Magician", "Monk", "Necromancer", "Paladin",
             "Ranger", "Rogue", "Shadow Knight", "Shaman", "Spellblade", "Wizard"
         ];
 
-        // Default Data Set
-        const DEFAULT_ROSTER = [
-            { id: "1", name: "Aethelred", class: "Paladin", level: 25, rank: "Grandmaster", focus: "PvE Dungeons", discord: "aeth#1996" },
-            { id: "2", name: "Morwenna", class: "Enchanter", level: 22, rank: "Officer", focus: "PvE Dungeons", discord: "morw_ench" },
-            { id: "3", name: "Gideon", class: "Fighter", level: 18, rank: "Spoon Knight", focus: "PvE Dungeons", discord: "gideon_f" },
-            { id: "4", name: "Bron", class: "Cleric", level: 20, rank: "Spoon Knight", focus: "PvE Dungeons", discord: "bron_heals" },
-            { id: "5", name: "Sela", class: "Spellblade", level: 15, rank: "Initiate", focus: "Crafting/Economy", discord: "sela_crafts" },
-            { id: "6", name: "Varis", class: "Ranger", level: 14, rank: "Initiate", focus: "Casual Adventurer", discord: "varis_ranger" }
-        ];
+        let dbRoster = [];
+        let priorities = JSON.parse(localStorage.getItem('gms_priorities')) || {};
+        let events = JSON.parse(localStorage.getItem('gms_events')) || [];
 
-        const DEFAULT_PRIORITIES = {
-            "Cleric": "High", "Enchanter": "High", "Shadow Knight": "Medium",
-            "Spellblade": "Medium", "Inquisitor": "Low", "Wizard": "Low"
-        };
-
-        const DEFAULT_EVENTS = [
-            { id: "e1", title: "Crypts Cryptic Excursion", date: "July 24", time: "8:00 PM", desc: "Armor material gathering and level clearing." },
-            { id: "e2", title: "Guild Council Gathering", date: "July 29", time: "9:00 PM", desc: "Briefing for ancient members." }
-        ];
-
-        let roster = JSON.parse(localStorage.getItem('gms_roster')) || DEFAULT_ROSTER;
-        let priorities = JSON.parse(localStorage.getItem('gms_priorities')) || DEFAULT_PRIORITIES;
-        let events = JSON.parse(localStorage.getItem('gms_events')) || DEFAULT_EVENTS;
-
-        // Initialize Application & Auth Listeners
         window.addEventListener('DOMContentLoaded', async () => {
             populateClassSelects();
-            renderRoster();
+            await fetchRosterFromSupabase();
             renderRecruitmentNeeds();
             renderEvents();
             renderOfficerPriorities();
 
-            // Check Supabase session
             const { data: { session } } = await supabaseClient.auth.getSession();
             await updateAuthUI(session);
 
@@ -554,7 +531,6 @@
                 if (loggedInHeader) loggedInHeader.classList.remove('hidden');
                 if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
 
-                // Check live Discord roles
                 const isOfficer = await verifyDiscordOfficerRole(session);
 
                 if (isOfficer) {
@@ -563,7 +539,7 @@
                     if (mobileOfficerBtn) mobileOfficerBtn.classList.remove('hidden');
                     fetchApplicationsFromSupabase();
                 } else {
-                    showNotification("Signed in. Officer tools restricted to Officers.", "info");
+                    showNotification("Signed in as Member.", "info");
                     if (officerNavBtn) officerNavBtn.classList.add('hidden');
                     if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
                     document.getElementById('view-officer').classList.add('hidden');
@@ -583,20 +559,13 @@
 
             try {
                 const response = await fetch(`https://discord.com/api/v10/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
-                    headers: {
-                        Authorization: `Bearer ${providerToken}`
-                    }
+                    headers: { Authorization: `Bearer ${providerToken}` }
                 });
 
-                if (!response.ok) {
-                    console.error("Could not fetch Discord server membership:", response.statusText);
-                    return false;
-                }
+                if (!response.ok) return false;
 
                 const memberData = await response.json();
                 const userRoles = memberData.roles || [];
-
-                // Check for Guild Leader or Officer role
                 return userRoles.includes(GUILD_LEADER_ROLE_ID) || userRoles.includes(OFFICER_ROLE_ID);
             } catch (err) {
                 console.error("Error verifying Discord roles:", err);
@@ -604,7 +573,92 @@
             }
         }
 
-        // Submit Application to Supabase DB & Discord Webhook
+        // Fetch Live Guild Members Roster from Supabase
+        async function fetchRosterFromSupabase() {
+            const { data, error } = await supabaseClient
+                .from('guild_members')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching roster from Supabase:", error.message);
+                return;
+            }
+
+            dbRoster = data ? data.map(m => ({
+                id: m.id,
+                name: m.in_game_name,
+                class: m.character_class || "Fighter",
+                level: m.character_level || 1,
+                rank: m.role || "Member",
+                focus: m.focus || "PvE Dungeons",
+                discord: m.username || m.discord_id || "N/A"
+            })) : [];
+
+            renderRosterUI();
+        }
+
+        function renderRosterUI() {
+            const container = document.getElementById('roster-grid');
+            if (!container) return;
+            container.innerHTML = "";
+
+            const searchVal = document.getElementById('roster-search')?.value.toLowerCase() || "";
+            const classFilter = document.getElementById('roster-class-filter')?.value || "All";
+            const rankFilter = document.getElementById('roster-rank-filter')?.value || "All";
+
+            const filtered = dbRoster.filter(mem => {
+                const matchSearch = mem.name.toLowerCase().includes(searchVal);
+                const matchClass = classFilter === "All" || mem.class === classFilter;
+                const matchRank = rankFilter === "All" || mem.rank === rankFilter;
+                return matchSearch && matchClass && matchRank;
+            });
+
+            if (filtered.length === 0) {
+                document.getElementById('roster-empty-state')?.classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('roster-empty-state')?.classList.add('hidden');
+            }
+
+            filtered.forEach(m => {
+                let rankStyle = "text-slate-400 border-slate-800 bg-slate-950";
+                if (m.rank === "Grandmaster" || m.rank === "Guild Leader") rankStyle = "text-gold-400 border-gold-800/40 bg-gold-950/30";
+                if (m.rank === "Officer") rankStyle = "text-amber-500 border-amber-900/40 bg-amber-950/30";
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 p-5 rounded-xl border border-slate-850 flex flex-col justify-between hover:border-gold-900/30 transition-all";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between">
+                            <h4 class="text-lg font-bold text-slate-100 font-serif">${m.name}</h4>
+                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded border ${rankStyle}">${m.rank}</span>
+                        </div>
+                        <div class="mt-4 space-y-1 text-xs">
+                            <div class="flex justify-between text-slate-400">
+                                <span>Class:</span>
+                                <span class="text-slate-200 font-medium">${m.class}</span>
+                            </div>
+                            <div class="flex justify-between text-slate-400">
+                                <span>Focus:</span>
+                                <span class="text-slate-200 font-medium">${m.focus}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-[10px]">
+                        <span class="text-slate-500 font-mono">${m.discord}</span>
+                        <span class="text-gold-500 font-semibold font-serif">LVL ${m.level || '1'}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterRoster() {
+            renderRosterUI();
+        }
+
+        // Submit Application
         async function handleRecruitmentSubmit(event) {
             event.preventDefault();
 
@@ -624,7 +678,6 @@
 
             showNotification("Submitting application...");
 
-            // 1. Insert into Supabase DB
             const { error } = await supabaseClient
                 .from('applications')
                 .insert([{
@@ -642,9 +695,6 @@
                 return;
             }
 
-            showNotification("Application recorded in database!");
-
-            // 2. Trigger Discord Webhook Notification
             try {
                 const embedPayload = {
                     embeds: [{
@@ -668,21 +718,21 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(embedPayload)
                 });
-                showNotification("Notification dispatched to Discord channel!");
             } catch (e) {
                 console.error("Webhook error:", e);
             }
 
+            showNotification("Application submitted successfully!");
             document.getElementById('recruitment-form').reset();
             switchTab('home');
         }
 
-        // Fetch Applications for Officer Center
+        // Fetch Pending Applications
         async function fetchApplicationsFromSupabase() {
             const container = document.getElementById('pending-applications-list');
             if (!container) return;
 
-            container.innerHTML = `<p class="text-slate-500 text-sm italic">Fetching applications from Supabase...</p>`;
+            container.innerHTML = `<p class="text-slate-500 text-sm italic">Fetching applications...</p>`;
 
             const { data, error } = await supabaseClient
                 .from('applications')
@@ -690,7 +740,7 @@
                 .order('created_at', { ascending: false });
 
             if (error) {
-                container.innerHTML = `<p class="text-red-400 text-sm">Error loading applications: ${error.message}</p>`;
+                container.innerHTML = `<p class="text-red-400 text-sm">Error: ${error.message}</p>`;
                 return;
             }
 
@@ -705,11 +755,7 @@
             }
 
             if (!data || data.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-8 text-slate-500">
-                        <p class="text-sm italic">No applications found in the database.</p>
-                    </div>
-                `;
+                container.innerHTML = `<p class="text-slate-500 text-sm italic py-4">No applications found in database.</p>`;
                 return;
             }
 
@@ -734,10 +780,10 @@
                         <span class="text-xs text-slate-400 font-mono">Discord: <span class="text-slate-200 font-bold">${app.applicant_username || 'N/A'}</span></span>
                         ${app.status === 'pending' ? `
                             <div class="flex gap-2">
-                                <button onclick="updateAppStatusInSupabase('${app.id}', 'approved')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded transition-all uppercase tracking-wider">
-                                    Approve
+                                <button onclick="processAppInSupabase('${app.id}', 'approved')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded transition-all uppercase tracking-wider">
+                                    Approve & Add to Roster
                                 </button>
-                                <button onclick="updateAppStatusInSupabase('${app.id}', 'rejected')" class="px-4 py-1.5 bg-red-900/50 hover:bg-red-800/80 text-red-200 border border-red-800/40 text-xs rounded transition-all uppercase tracking-wider">
+                                <button onclick="processAppInSupabase('${app.id}', 'rejected')" class="px-4 py-1.5 bg-red-900/50 hover:bg-red-800/80 text-red-200 border border-red-800/40 text-xs rounded transition-all uppercase tracking-wider">
                                     Reject
                                 </button>
                             </div>
@@ -747,21 +793,48 @@
             `).join('');
         }
 
-        async function updateAppStatusInSupabase(id, newStatus) {
-            const { error } = await supabaseClient
+        // Approve or Reject Application & Auto-Add to DB Roster
+        async function processAppInSupabase(appId, decision) {
+            // Update application status
+            const { error: appErr } = await supabaseClient
                 .from('applications')
-                .update({ status: newStatus })
-                .eq('id', id);
+                .update({ status: decision })
+                .eq('id', appId);
 
-            if (error) {
-                showNotification("Error updating status: " + error.message, "error");
-            } else {
-                showNotification(`Application marked as ${newStatus}.`);
-                fetchApplicationsFromSupabase();
+            if (appErr) {
+                showNotification("Error updating status: " + appErr.message, "error");
+                return;
             }
+
+            if (decision === 'approved') {
+                // Fetch application data to add applicant to guild_members table
+                const { data: appData } = await supabaseClient
+                    .from('applications')
+                    .select('*')
+                    .eq('id', appId)
+                    .single();
+
+                if (appData) {
+                    await supabaseClient.from('guild_members').insert([{
+                        discord_id: appData.applicant_discord_id,
+                        username: appData.applicant_username,
+                        in_game_name: appData.character_name,
+                        character_class: appData.character_class,
+                        character_level: appData.character_level,
+                        role: 'Initiate',
+                        focus: appData.notes || 'PvE Dungeons'
+                    }]);
+                    showNotification(`${appData.character_name} approved and added to live roster!`);
+                }
+            } else {
+                showNotification("Application rejected.");
+            }
+
+            fetchApplicationsFromSupabase();
+            fetchRosterFromSupabase();
         }
 
-        // Helper UI Functions
+        // UI Helpers
         function populateClassSelects() {
             const rosterFilterSelect = document.getElementById('roster-class-filter');
             const appClassSelect = document.getElementById('app-class');
@@ -793,10 +866,7 @@
             toast.textContent = msg;
             container.appendChild(toast);
 
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => toast.remove(), 300);
@@ -804,9 +874,7 @@
         }
 
         function switchTab(tabId) {
-            document.querySelectorAll('.view-section').forEach(section => {
-                section.classList.add('hidden');
-            });
+            document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
 
             document.querySelectorAll('header nav button').forEach(btn => {
@@ -824,6 +892,7 @@
 
         function renderRecruitmentNeeds() {
             const container = document.getElementById('recruitment-needs-list');
+            if (!container) return;
             container.innerHTML = "";
 
             const sorted = Object.entries(priorities).sort((a, b) => {
@@ -848,6 +917,7 @@
 
         function renderEvents() {
             const container = document.getElementById('events-list');
+            if (!container) return;
             container.innerHTML = "";
 
             if (events.length === 0) {
@@ -867,65 +937,6 @@
                 `;
                 container.appendChild(card);
             });
-        }
-
-        function renderRoster() {
-            const container = document.getElementById('roster-grid');
-            container.innerHTML = "";
-
-            const searchVal = document.getElementById('roster-search').value.toLowerCase();
-            const classFilter = document.getElementById('roster-class-filter').value;
-            const rankFilter = document.getElementById('roster-rank-filter').value;
-
-            const filtered = roster.filter(mem => {
-                const matchSearch = mem.name.toLowerCase().includes(searchVal);
-                const matchClass = classFilter === "All" || mem.class === classFilter;
-                const matchRank = rankFilter === "All" || mem.rank === rankFilter;
-                return matchSearch && matchClass && matchRank;
-            });
-
-            if (filtered.length === 0) {
-                document.getElementById('roster-empty-state').classList.remove('hidden');
-                return;
-            } else {
-                document.getElementById('roster-empty-state').classList.add('hidden');
-            }
-
-            filtered.forEach(m => {
-                let rankStyle = "text-slate-400 border-slate-800 bg-slate-950";
-                if (m.rank === "Grandmaster") rankStyle = "text-gold-400 border-gold-800/40 bg-gold-950/30";
-                if (m.rank === "Officer") rankStyle = "text-amber-500 border-amber-900/40 bg-amber-950/30";
-
-                const card = document.createElement('div');
-                card.className = "bg-slate-900 p-5 rounded-xl border border-slate-850 flex flex-col justify-between hover:border-gold-900/30 transition-all";
-                card.innerHTML = `
-                    <div>
-                        <div class="flex items-start justify-between">
-                            <h4 class="text-lg font-bold text-slate-100 font-serif">${m.name}</h4>
-                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded border ${rankStyle}">${m.rank}</span>
-                        </div>
-                        <div class="mt-4 space-y-1 text-xs">
-                            <div class="flex justify-between text-slate-400">
-                                <span>Class:</span>
-                                <span class="text-slate-200 font-medium">${m.class}</span>
-                            </div>
-                            <div class="flex justify-between text-slate-400">
-                                <span>Focus:</span>
-                                <span class="text-slate-200 font-medium">${m.focus}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-[10px]">
-                        <span class="text-slate-500 font-mono">${m.discord}</span>
-                        <span class="text-gold-500 font-semibold font-serif">LVL ${m.level || '??'}</span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function filterRoster() {
-            renderRoster();
         }
 
         function renderOfficerPriorities() {
@@ -955,7 +966,7 @@
             priorities[className] = priorityLevel;
             localStorage.setItem('gms_priorities', JSON.stringify(priorities));
             renderRecruitmentNeeds();
-            showNotification(`Updated recruitment priority for ${className} to ${priorityLevel}.`);
+            showNotification(`Updated priority for ${className} to ${priorityLevel}.`);
         }
 
         function addNewEvent() {
@@ -965,7 +976,7 @@
             const descIn = document.getElementById('new-event-desc');
 
             if (!titleIn.value || !dateIn.value) {
-                showNotification("Event requires a valid Title and Date.", "error");
+                showNotification("Event requires a Title and Date.", "error");
                 return;
             }
 
@@ -980,7 +991,7 @@
             events.push(evObj);
             localStorage.setItem('gms_events', JSON.stringify(events));
 
-            showNotification("Upcoming Expedition has been published!");
+            showNotification("Upcoming Expedition published!");
             renderEvents();
 
             titleIn.value = "";
