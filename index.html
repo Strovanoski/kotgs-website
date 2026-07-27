@@ -53,15 +53,15 @@
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex space-x-1">
-                    <button onclick="switchTab('home')" id="nav-home" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30">Home</button>
-                    <button onclick="switchTab('roster')" id="nav-roster" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Roster</button>
-                    <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Apply</button>
-                    <button onclick="switchTab('news-archive')" id="nav-news-archive" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Chronicles</button>
-                    <button onclick="switchTab('rules')" id="nav-rules" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Charter</button>
-                    <button onclick="switchTab('resources')" id="nav-resources" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Resources</button>
-                    <button onclick="switchTab('gallery')" id="nav-gallery" class="px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Gallery</button>
-                    <button onclick="switchTab('profile')" id="nav-profile" class="hidden px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">My Profile</button>
-                    <button onclick="switchTab('officer')" id="nav-officer" class="hidden px-3.5 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
+                    <button onclick="switchTab('home')" id="nav-home" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30">Home</button>
+                    <button onclick="switchTab('roster')" id="nav-roster" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Roster</button>
+                    <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Apply</button>
+                    <button onclick="switchTab('news-archive')" id="nav-news-archive" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Chronicles</button>
+                    <button onclick="switchTab('rules')" id="nav-rules" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Charter</button>
+                    <button onclick="switchTab('resources')" id="nav-resources" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Resources</button>
+                    <button onclick="switchTab('gallery')" id="nav-gallery" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Gallery</button>
+                    <button onclick="switchTab('profile')" id="nav-profile" class="hidden px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">My Profile</button>
+                    <button onclick="switchTab('officer')" id="nav-officer" class="hidden px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
                         <span>Officers</span>
                         <span id="nav-badge" class="hidden bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
                     </button>
@@ -75,32 +75,23 @@
                         </svg>
                         <span class="font-semibold text-xs tracking-wider">JOIN DISCORD</span>
                     </a>
-                    
                     <div id="auth-header-logged-out">
-                        <button onclick="loginWithDiscord()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition-colors tracking-wider">
-                            MEMBER LOGIN
-                        </button>
+                        <button onclick="loginWithDiscord()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition-colors tracking-wider">MEMBER LOGIN</button>
                     </div>
                     <div id="auth-header-logged-in" class="hidden flex items-center space-x-2">
                         <span id="header-user-name" class="text-xs text-gold-400 font-semibold cursor-pointer" onclick="switchTab('profile')"></span>
-                        <button onclick="logout()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-red-900/60 text-slate-300 hover:text-red-200 text-xs rounded border border-slate-700 transition-colors">
-                            Sign Out
-                        </button>
+                        <button onclick="logout()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-red-900/60 text-slate-300 hover:text-red-200 text-xs rounded border border-slate-700 transition-colors">Sign Out</button>
                     </div>
                 </div>
 
-                <!-- Mobile Menu Button -->
                 <div class="md:hidden">
                     <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-gold-400 p-2 focus:outline-none">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-                        </svg>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Mobile Dropdown Navigation -->
         <div id="mobile-menu" class="hidden md:hidden bg-slate-900 border-b border-gold-900/50 px-4 py-3 space-y-2">
             <button onclick="switchTab('home'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-gold-400 bg-slate-800">Home</button>
             <button onclick="switchTab('roster'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Roster</button>
@@ -115,10 +106,8 @@
         </div>
     </header>
 
-    <!-- Global Notifications Container -->
     <div id="notification-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full"></div>
 
-    <!-- Main Content Area -->
     <main class="flex-grow">
 
         <!-- ================= HOME VIEW ================= -->
@@ -163,19 +152,13 @@
                             
                             <h3 class="text-2xl font-bold font-serif text-gold-400 mb-4 border-b border-gold-900/40 pb-2">The Oath of the Golden Spoon</h3>
                             <div class="prose prose-invert max-w-none text-slate-300 space-y-4">
-                                <p class="italic font-serif text-lg text-slate-200 border-l-4 border-gold-600 pl-4 py-1">
+                                <p class="italic font-serif text-lg text-slate-200 border-l-4 border-gold-600 pl-4 py-1 oath-quote-text">
                                     "We swear to hold aloft the Spoon in times of shadow. We shield the weary, feed the crafting forges, and face down the deep horrors of this realm. Together as one family, we stand."
-                                </p>
-                                <p>
-                                    Our fellowship was forged in the ancient, historical era of Sierra's <span class="text-gold-400 font-semibold">The Realm Online (1996)</span>. In those days, we learned that community, honor, and mutual aid were the true treasures of any world. 
-                                </p>
-                                <p>
-                                    Now, as the world of <span class="text-gold-400">Monsters & Memories</span> wakes up, we return. Our goal is not just conquest, but the nurturing of a home for players who value genuine companionship, steady PvE progress, master craftsmanship, and unwavering chivalry. We do not tolerate toxic pursuits—only the legendary justice of the Spoon.
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Dynamic Guild News Feed (Truncated to 5 items) -->
+                        <!-- Dynamic Guild News Feed -->
                         <div class="bg-slate-900/80 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-2xl font-bold font-serif text-slate-100 flex items-center space-x-2">
@@ -200,7 +183,6 @@
 
                     <!-- RIGHT COLUMN: Side Widgets -->
                     <div class="space-y-8">
-                        <!-- Guild Vitals -->
                         <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center space-x-2">
                                 <svg class="w-5 h-5 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -226,7 +208,7 @@
                             </div>
                         </div>
 
-                        <!-- 1st Priority: Upcoming Expeditions Calendar -->
+                        <!-- Upcoming Expeditions Calendar -->
                         <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
                                 <span class="flex items-center space-x-2">
@@ -237,7 +219,7 @@
                             <div id="events-list" class="space-y-3"></div>
                         </div>
 
-                        <!-- 2nd Priority: Recruitment Priorities Widget -->
+                        <!-- Recruitment Priorities Widget -->
                         <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
                                 <span class="flex items-center space-x-2">
@@ -409,7 +391,7 @@
                     <p class="text-slate-400 mt-2 max-w-xl mx-auto">
                         We seek honorable souls who align with our vision of fair play, master crafts, and warm companionable excursions.
                     </p>
-                    <p class="text-gold-500 font-semibold font-serif text-sm mt-3 tracking-wider italic">
+                    <p class="text-gold-500 font-semibold font-serif text-sm mt-3 tracking-wider italic oath-quote-text">
                         "For Justice, Honor, and the Glory of the Golden Spoon!!"
                     </p>
                 </div>
@@ -461,7 +443,7 @@
                                 </div>
                                 <div class="ml-3 text-sm">
                                     <label for="vow-checkbox" class="font-medium text-slate-300">I solemnly pledge to honor the guild mandate, help my brothers, maintain high honor, and hold to our ancient creed:</label>
-                                    <p class="text-gold-400 font-serif font-bold text-xs mt-1">"For Justice, Honor, and the Glory of the Golden Spoon!!"</p>
+                                    <p class="text-gold-400 font-serif font-bold text-xs mt-1 oath-quote-text">"For Justice, Honor, and the Glory of the Golden Spoon!!"</p>
                                 </div>
                             </div>
                         </div>
@@ -484,12 +466,12 @@
                 <div class="mb-8 border-b border-slate-800 pb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-3xl font-bold font-serif text-slate-100">Officer Command Center</h2>
-                        <p class="text-slate-400 mt-1">Manage recruiting applications, publish guild news, schedule expeditions, update roster roles, and set class priorities.</p>
+                        <p class="text-slate-400 mt-1">Manage recruiting applications, Oath/Charter content, resource links, victory gallery, expeditions, and class priorities.</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- COLUMN 1: Applications, Roster Admin, News List & Expeditions List -->
+                    <!-- COLUMN 1: Applications, Roster, Resources & Gallery Admin -->
                     <div class="lg:col-span-2 space-y-8">
                         <!-- Pending Applications -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
@@ -505,92 +487,108 @@
                         <!-- Manage Guild Members Roster -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Guild Roster & Ranks</h3>
-                            <div id="officer-roster-manager-list" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                            <div id="officer-roster-manager-list" class="space-y-3 max-h-[350px] overflow-y-auto pr-2">
                                 <p class="text-slate-500 text-sm italic">Loading member roster...</p>
                             </div>
                         </div>
 
-                        <!-- Published Bulletins Manager -->
+                        <!-- Manage Resource Links -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Live News Bulletins</h3>
-                            <div id="officer-news-manager-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                                <p class="text-slate-500 text-sm italic">Loading news for management...</p>
+                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Resource Hub Links</h3>
+                            <div id="officer-resource-manager-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                                <p class="text-slate-500 text-sm italic">Loading resource links...</p>
                             </div>
                         </div>
 
-                        <!-- Published Expeditions Manager -->
+                        <!-- Manage Screenshot Gallery -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Published Expeditions</h3>
-                            <div id="officer-event-manager-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                                <p class="text-slate-500 text-sm italic">Loading expeditions for management...</p>
+                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Screenshot Gallery</h3>
+                            <div id="officer-gallery-manager-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                                <p class="text-slate-500 text-sm italic">Loading gallery items...</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- COLUMN 2: Expeditions, News & Priorities Forms -->
+                    <!-- COLUMN 2: Charter, Forms for Resources, Gallery, News & Events -->
                     <div class="space-y-8">
-                        <!-- Publish/Edit Guild News Bulletin Form -->
+                        <!-- Edit Oath & Charter Form -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 id="news-form-title" class="text-lg font-bold font-serif text-slate-100 mb-4">Publish Guild News / Bulletin</h3>
+                            <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Manage Oath & Charter</h3>
                             <div class="space-y-4">
                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">The Oath of the Golden Spoon</label>
+                                    <textarea id="officer-edit-oath" rows="3" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Guild Charter Sections (Separated by ---)</label>
+                                    <textarea id="officer-edit-charter" rows="6" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600 font-mono text-xs"></textarea>
+                                </div>
+                                <button onclick="saveOathAndCharterFromOfficer()" class="w-full py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
+                                    Save Charter & Oath Changes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Add/Edit Resource Form -->
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
+                            <h3 id="resource-form-title" class="text-lg font-bold font-serif text-slate-100 mb-4">Add New Resource Link</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Resource Title</label>
+                                    <input type="text" id="new-res-title" placeholder="E.g., Class Spell Guide" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div>
                                     <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Category</label>
-                                    <select id="new-news-category" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                        <option value="OFFICER BULLETIN">OFFICER BULLETIN</option>
-                                        <option value="CAMPAIGN UPDATE">CAMPAIGN UPDATE</option>
-                                        <option value="EVENT REVIEW">EVENT REVIEW</option>
+                                    <select id="new-res-category" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                        <option value="Tools & Guides">Tools & Guides</option>
+                                        <option value="Game Access">Game Access</option>
+                                        <option value="Community">Community</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">News Title</label>
-                                    <input type="text" id="new-news-title" placeholder="E.g., Preparing for Next Test Phase" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">URL Link</label>
+                                    <input type="text" id="new-res-url" placeholder="https://..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date Header</label>
-                                    <input type="text" id="new-news-date" placeholder="E.g., July 27, 2026" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Bulletin Content</label>
-                                    <textarea id="new-news-content" rows="4" placeholder="Enter bulletin details..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600"></textarea>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Description</label>
+                                    <input type="text" id="new-res-desc" placeholder="Brief summary..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
                                 </div>
                                 <div class="flex gap-2">
-                                    <button onclick="addNewNews()" id="publish-news-btn" class="flex-grow py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
-                                        Publish News Article
+                                    <button onclick="addNewResource()" id="publish-res-btn" class="flex-grow py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
+                                        Add Resource Link
                                     </button>
-                                    <button onclick="cancelEditNews()" id="cancel-news-btn" class="hidden px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg text-sm transition-colors">
+                                    <button onclick="cancelEditResource()" id="cancel-res-btn" class="hidden px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg text-sm transition-colors">
                                         Cancel
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Schedule/Edit Expedition Form -->
+                        <!-- Add/Edit Gallery Form -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 id="event-form-title" class="text-lg font-bold font-serif text-slate-100 mb-4">Schedule New Expedition</h3>
+                            <h3 id="gallery-form-title" class="text-lg font-bold font-serif text-slate-100 mb-4">Add Victory / Screenshot Memory</h3>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Event Title</label>
-                                    <input type="text" id="new-event-title" placeholder="E.g., Crypts Dungeon Run" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date</label>
-                                        <input type="text" id="new-event-date" placeholder="July 28" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Time (EST)</label>
-                                        <input type="text" id="new-event-time" placeholder="8:00 PM" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                    </div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Memory Title</label>
+                                    <input type="text" id="new-gal-title" placeholder="E.g., Boss First Kill" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Event Objective</label>
-                                    <input type="text" id="new-event-desc" placeholder="E.g., Helping recruits get gear." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date Header</label>
+                                    <input type="text" id="new-gal-date" placeholder="E.g., July 2026" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Image URL</label>
+                                    <input type="text" id="new-gal-url" placeholder="https://..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Caption</label>
+                                    <input type="text" id="new-gal-caption" placeholder="Description of event..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
                                 </div>
                                 <div class="flex gap-2">
-                                    <button onclick="addNewEvent()" id="publish-event-btn" class="flex-grow py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
-                                        Publish Expedition
+                                    <button onclick="addNewGalleryItem()" id="publish-gal-btn" class="flex-grow py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
+                                        Add Memory to Gallery
                                     </button>
-                                    <button onclick="cancelEditEvent()" id="cancel-event-btn" class="hidden px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg text-sm transition-colors">
+                                    <button onclick="cancelEditGallery()" id="cancel-gal-btn" class="hidden px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg text-sm transition-colors">
                                         Cancel
                                     </button>
                                 </div>
