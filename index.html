@@ -32,6 +32,140 @@
             }
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://zzotvstvmnlmfrulxhvl.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable__o4vTB20JE2br9c_F3p8rQ_ez98q06n";
+        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531232336920711239/Wt-LiJ64wHumDL34ntEL0IEe2PqV5mBVYeN6GLZIvrDrbyi7kd3zEU8zdi7lRY_J6IGS";
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Initialize Auth State & explicitly force redirect back to GitHub Pages
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            updateAuthUI(session);
+            
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
+                updateAuthUI(session);
+            });
+        });
+
+        function updateAuthUI(session) {
+            const officerSection = document.getElementById('officer-center');
+            if (session) {
+                if (officerSection) officerSection.style.display = 'block';
+                fetchApplications();
+            } else {
+                if (officerSection) officerSection.style.display = 'none';
+            }
+        }
+
+        async function loginWithDiscord() {
+            await supabaseClient.auth.signInWithOAuth({
+                provider: 'discord',
+                options: { redirectTo: 'https://strovanoski.github.io/kotgs-website/' }
+            });
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+        }
+
+        async function submitApplication(e) {
+            e.preventDefault();
+
+            const charName = document.getElementById('char-name')?.value || '';
+            const charClass = document.getElementById('char-class')?.value || '';
+            const charLevel = parseInt(document.getElementById('char-level')?.value || '1');
+            const experience = document.getElementById('experience')?.value || '';
+
+            // 1. Insert into Supabase DB
+            const { error } = await supabaseClient
+                .from('applications')
+                .insert([{ character_name: charName, character_class: charClass, character_level: charLevel, experience: experience }]);
+
+            if (error) {
+                alert("Error submitting application: " + error.message);
+                return;
+            }
+
+            // 2. Trigger Discord Webhook Notification
+            try {
+                await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        embeds: [{
+                            title: "⚔️ New Guild Application Received!",
+                            color: 5814786,
+                            fields: [
+                                { name: "Character", value: charName, inline: true },
+                                { name: "Class", value: charClass, inline: true },
+                                { name: "Level", value: String(charLevel), inline: true },
+                                { name: "Experience / Bio", value: experience || "N/A" }
+                            ],
+                            footer: { text: "KOTGS Website Notification" }
+                        }]
+                    })
+                });
+            } catch (err) {
+                console.error("Webhook error:", err);
+            }
+
+            alert("Application submitted successfully!");
+            document.getElementById('app-form').reset();
+        }
+
+        async function fetchApplications() {
+            const tbody = document.getElementById('applications-list');
+            if (!tbody) return;
+
+            tbody.innerHTML = "<tr><td colspan='6'>Fetching...</td></tr>";
+
+            const { data, error } = await supabaseClient
+                .from('applications')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                tbody.innerHTML = `<tr><td colspan='6'>Error: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='6'>No applications found.</td></tr>";
+                return;
+            }
+
+            tbody.innerHTML = data.map(app => `
+            <tr>
+            <td>${app.character_name}</td>
+            <td>${app.character_class}</td>
+            <td>${app.character_level}</td>
+            <td>${app.experience || ''}</td>
+            <td><strong>${app.status}</strong></td>
+            <td>
+            ${app.status === 'pending' ? `
+            <button onclick="updateAppStatus('${app.id}', 'approved')">Approve</button>
+            <button onclick="updateAppStatus('${app.id}', 'rejected')">Reject</button>
+            ` : 'Done'}
+        </td>
+      </tr>
+      `).join('');
+        }
+        async function updateAppStatus(id, newStatus) {
+            const { error } = await supabaseClient
+                .from('applications')
+                .update({ status: newStatus })
+                .eq('id', id);
+
+            if (error) {
+                alert("Error updating status: " + error.message);
+            } else {
+                fetchApplications();
+            }
+        }
+    </script>
     <!-- Custom Style for Retro Scrollbars and Font accents -->
     <style>
         ::-webkit-scrollbar {
