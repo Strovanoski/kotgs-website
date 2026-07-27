@@ -81,7 +81,7 @@
                     <button onclick="switchTab('home')" id="nav-home" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30">Home</button>
                     <button onclick="switchTab('roster')" id="nav-roster" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Roster</button>
                     <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Apply</button>
-                    <button onclick="switchTab('officer')" id="nav-officer" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
+                    <button onclick="switchTab('officer')" id="nav-officer" class="hidden px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
                         <span>Officers</span>
                         <span id="nav-badge" class="hidden bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
                     </button>
@@ -99,7 +99,7 @@
                     <!-- Discord Login/Logout Controls -->
                     <div id="auth-header-logged-out">
                         <button onclick="loginWithDiscord()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition-colors tracking-wider">
-                            OFFICER LOGIN
+                            MEMBER LOGIN
                         </button>
                     </div>
                     <div id="auth-header-logged-in" class="hidden flex items-center space-x-2">
@@ -126,8 +126,8 @@
             <button onclick="switchTab('home'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-gold-400 bg-slate-800">Home</button>
             <button onclick="switchTab('roster'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Roster</button>
             <button onclick="switchTab('recruitment'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Apply</button>
-            <button onclick="switchTab('officer'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Officer Center</button>
-            <button onclick="loginWithDiscord()" class="block w-full text-center px-3 py-2 rounded text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Officer Login</button>
+            <button onclick="switchTab('officer'); toggleMobileMenu()" id="mobile-nav-officer" class="hidden block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Officer Center</button>
+            <button onclick="loginWithDiscord()" class="block w-full text-center px-3 py-2 rounded text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Member Login</button>
         </div>
     </header>
 
@@ -139,8 +139,6 @@
 
         <!-- ================= HOME VIEW ================= -->
         <section id="view-home" class="view-section py-8 md:py-12">
-            
-            <!-- Hero Banner -->
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
                 <div class="relative rounded-2xl overflow-hidden border border-gold-800/40 shadow-2xl bg-slate-900/40">
                     <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/80 to-transparent z-10"></div>
@@ -168,14 +166,9 @@
                 </div>
             </div>
 
-            <!-- Dashboard Grid -->
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
-                    <!-- LEFT COLUMN: Guild Information & The Oath -->
                     <div class="lg:col-span-2 space-y-8">
-                        
-                        <!-- The Oath of the Golden Spoon -->
                         <div class="bg-gradient-to-b from-slate-900 to-slate-950 p-6 md:p-8 rounded-xl border border-gold-900/50 shadow-xl relative overflow-hidden">
                             <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                                 <svg class="w-32 h-32 text-gold-500" fill="currentColor" viewBox="0 0 24 24">
@@ -197,7 +190,6 @@
                             </div>
                         </div>
 
-                        <!-- Guild News & Campaigns -->
                         <div class="bg-slate-900/80 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-2xl font-bold font-serif text-slate-100 flex items-center space-x-2">
@@ -207,7 +199,6 @@
                                 <span class="text-xs text-gold-400 uppercase tracking-widest font-semibold bg-gold-950 px-2 py-1 rounded border border-gold-900/60">Campaign Updates</span>
                             </div>
                             
-                            <!-- News Stream -->
                             <div class="space-y-6">
                                 <div class="border-b border-slate-800/80 pb-6 last:border-0 last:pb-0">
                                     <div class="flex items-center space-x-2 text-xs text-slate-400 mb-2">
@@ -222,13 +213,9 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
-                    <!-- RIGHT COLUMN: Side widgets & status -->
                     <div class="space-y-8">
-                        
-                        <!-- Guild Vitals Info -->
                         <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center space-x-2">
                                 <svg class="w-5 h-5 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -254,7 +241,6 @@
                             </div>
                         </div>
 
-                        <!-- Recruitment Needs Widget -->
                         <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
                                 <span class="flex items-center space-x-2">
@@ -262,15 +248,12 @@
                                     <span>Recruitment Priorities</span>
                                 </span>
                             </h3>
-                            
                             <div id="recruitment-needs-list" class="space-y-3"></div>
-                            
                             <button onclick="switchTab('recruitment')" class="w-full mt-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-gold-400 hover:text-gold-300 font-semibold rounded text-sm transition-colors border border-slate-700/80">
                                 Apply to the Guild
                             </button>
                         </div>
 
-                        <!-- Calendar Module -->
                         <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
                                 <span class="flex items-center space-x-2">
@@ -280,12 +263,9 @@
                             </h3>
                             <div id="events-list" class="space-y-3"></div>
                         </div>
-
                     </div>
-
                 </div>
             </div>
-
         </section>
 
 
@@ -341,7 +321,6 @@
                     </p>
                 </div>
 
-                <!-- Application Form -->
                 <div class="bg-slate-900 p-6 md:p-8 rounded-xl border border-gold-900/40 shadow-2xl">
                     <form id="recruitment-form" onsubmit="handleRecruitmentSubmit(event)" class="space-y-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -417,8 +396,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
-                    <!-- COLUMN 1: Pending Applications -->
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-xl font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
@@ -431,7 +408,6 @@
                         </div>
                     </div>
 
-                    <!-- COLUMN 2: Expeditions & Priorities Manager -->
                     <div class="space-y-8">
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Schedule New Expedition</h3>
@@ -460,13 +436,11 @@
                             </div>
                         </div>
 
-                        <!-- Class Priority Configuration -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Set Class Priorities</h3>
                             <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2" id="officer-priority-list"></div>
                         </div>
                     </div>
-
                 </div>
 
             </div>
@@ -492,10 +466,16 @@
 
     <!-- JS Logic, Supabase & Discord Integration -->
     <script>
-        // Injected Supabase and Discord Credentials
+        // Supabase & Discord Credentials
         const SUPABASE_URL = "https://zzotvstvmnlmfrulxhvl.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable__o4vTB20JE2br9c_F3p8rQ_ez98q06n";
         const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531232336920711239/Wt-LiJ64wHumDL34ntEL0IEe2PqV5mBVYeN6GLZIvrDrbyi7kd3zEU8zdi7lRY_J6IGS";
+
+        // Discord Server & Role IDs
+        const DISCORD_GUILD_ID = "1527962374366040084";
+        const GUILD_LEADER_ROLE_ID = "1531247534104907919";
+        const OFFICER_ROLE_ID = "1531248101573136474";
+        const GUILD_MEMBER_ROLE_ID = "1531249654715519088";
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -506,7 +486,7 @@
             "Ranger", "Rogue", "Shadow Knight", "Shaman", "Spellblade", "Wizard"
         ];
 
-        // Default Data Set for Local State
+        // Default Data Set
         const DEFAULT_ROSTER = [
             { id: "1", name: "Aethelred", class: "Paladin", level: 25, rank: "Grandmaster", focus: "PvE Dungeons", discord: "aeth#1996" },
             { id: "2", name: "Morwenna", class: "Enchanter", level: 22, rank: "Officer", focus: "PvE Dungeons", discord: "morw_ench" },
@@ -540,33 +520,20 @@
 
             // Check Supabase session
             const { data: { session } } = await supabaseClient.auth.getSession();
-            updateAuthUI(session);
+            await updateAuthUI(session);
 
-            supabaseClient.auth.onAuthStateChange((_event, session) => {
-                updateAuthUI(session);
+            supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+                await updateAuthUI(session);
             });
         });
-
-        function updateAuthUI(session) {
-            const loggedOutHeader = document.getElementById('auth-header-logged-out');
-            const loggedInHeader = document.getElementById('auth-header-logged-in');
-            const userNameSpan = document.getElementById('header-user-name');
-
-            if (session) {
-                if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
-                if (loggedInHeader) loggedInHeader.classList.remove('hidden');
-                if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
-                fetchApplicationsFromSupabase();
-            } else {
-                if (loggedOutHeader) loggedOutHeader.classList.remove('hidden');
-                if (loggedInHeader) loggedInHeader.classList.add('hidden');
-            }
-        }
 
         async function loginWithDiscord() {
             await supabaseClient.auth.signInWithOAuth({
                 provider: 'discord',
-                options: { redirectTo: 'https://strovanoski.github.io/kotgs-website/' }
+                options: {
+                    redirectTo: 'https://strovanoski.github.io/kotgs-website/',
+                    scopes: 'identify email guilds.members.read'
+                }
             });
         }
 
@@ -575,7 +542,69 @@
             showNotification("Signed out successfully.");
         }
 
-        // Submit Application to Supabase & Trigger Discord Webhook
+        async function updateAuthUI(session) {
+            const loggedOutHeader = document.getElementById('auth-header-logged-out');
+            const loggedInHeader = document.getElementById('auth-header-logged-in');
+            const userNameSpan = document.getElementById('header-user-name');
+            const officerNavBtn = document.getElementById('nav-officer');
+            const mobileOfficerBtn = document.getElementById('mobile-nav-officer');
+
+            if (session) {
+                if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
+                if (loggedInHeader) loggedInHeader.classList.remove('hidden');
+                if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
+
+                // Check live Discord roles
+                const isOfficer = await verifyDiscordOfficerRole(session);
+
+                if (isOfficer) {
+                    showNotification("Welcome Officer! Command Center unlocked.", "success");
+                    if (officerNavBtn) officerNavBtn.classList.remove('hidden');
+                    if (mobileOfficerBtn) mobileOfficerBtn.classList.remove('hidden');
+                    fetchApplicationsFromSupabase();
+                } else {
+                    showNotification("Signed in. Officer tools restricted to Officers.", "info");
+                    if (officerNavBtn) officerNavBtn.classList.add('hidden');
+                    if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
+                    document.getElementById('view-officer').classList.add('hidden');
+                }
+            } else {
+                if (loggedOutHeader) loggedOutHeader.classList.remove('hidden');
+                if (loggedInHeader) loggedInHeader.classList.add('hidden');
+                if (officerNavBtn) officerNavBtn.classList.add('hidden');
+                if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
+                document.getElementById('view-officer').classList.add('hidden');
+            }
+        }
+
+        async function verifyDiscordOfficerRole(session) {
+            const providerToken = session.provider_token;
+            if (!providerToken || !DISCORD_GUILD_ID) return false;
+
+            try {
+                const response = await fetch(`https://discord.com/api/v10/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
+                    headers: {
+                        Authorization: `Bearer ${providerToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error("Could not fetch Discord server membership:", response.statusText);
+                    return false;
+                }
+
+                const memberData = await response.json();
+                const userRoles = memberData.roles || [];
+
+                // Check for Guild Leader or Officer role
+                return userRoles.includes(GUILD_LEADER_ROLE_ID) || userRoles.includes(OFFICER_ROLE_ID);
+            } catch (err) {
+                console.error("Error verifying Discord roles:", err);
+                return false;
+            }
+        }
+
+        // Submit Application to Supabase DB & Discord Webhook
         async function handleRecruitmentSubmit(event) {
             event.preventDefault();
 
@@ -593,7 +622,7 @@
             const discordTag = discordInput.value.trim();
             const bio = bioInput.value.trim() || "No historic stories recorded.";
 
-            showNotification("Submitting application to Supabase...");
+            showNotification("Submitting application...");
 
             // 1. Insert into Supabase DB
             const { error } = await supabaseClient
@@ -613,7 +642,7 @@
                 return;
             }
 
-            showNotification("Application saved to database!");
+            showNotification("Application recorded in database!");
 
             // 2. Trigger Discord Webhook Notification
             try {
@@ -639,22 +668,21 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(embedPayload)
                 });
-                showNotification("Application notification sent to Discord!");
+                showNotification("Notification dispatched to Discord channel!");
             } catch (e) {
                 console.error("Webhook error:", e);
             }
 
             document.getElementById('recruitment-form').reset();
-            fetchApplicationsFromSupabase();
             switchTab('home');
         }
 
-        // Fetch Applications directly from Supabase for Officer Center
+        // Fetch Applications for Officer Center
         async function fetchApplicationsFromSupabase() {
             const container = document.getElementById('pending-applications-list');
             if (!container) return;
 
-            container.innerHTML = `<p class="text-slate-500 text-sm italic">Fetching from Supabase...</p>`;
+            container.innerHTML = `<p class="text-slate-500 text-sm italic">Fetching applications from Supabase...</p>`;
 
             const { data, error } = await supabaseClient
                 .from('applications')
@@ -728,7 +756,7 @@
             if (error) {
                 showNotification("Error updating status: " + error.message, "error");
             } else {
-                showNotification(`Application updated to ${newStatus}.`);
+                showNotification(`Application marked as ${newStatus}.`);
                 fetchApplicationsFromSupabase();
             }
         }
