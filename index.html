@@ -320,12 +320,10 @@
                         </select>
                         <select id="roster-rank-filter" onchange="filterRoster()" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-300 focus:outline-none focus:border-gold-600">
                             <option value="All">All Ranks</option>
-                            <option value="Guild Leader">Guild Leader</option>
                             <option value="Grandmaster">Grandmaster</option>
-                            <option value="Officer">Officer</option>
-                            <option value="Spoon Knight">Spoon Knight</option>
-                            <option value="Initiate">Initiate</option>
-                            <option value="Member">Member</option>
+                            <option value="Knight-Commander">Knight-Commander</option>
+                            <option value="Knight">Knight</option>
+                            <option value="Squire">Squire</option>
                         </select>
                     </div>
                 </div>
@@ -374,7 +372,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Assigned Guild Role</label>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Assigned Guild Rank</label>
                         <input type="text" id="profile-role" readonly class="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 rounded-lg text-gold-400 font-semibold cursor-not-allowed">
                     </div>
 
@@ -489,7 +487,7 @@
 
                         <!-- Manage Guild Members Roster -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Guild Roster & Roles</h3>
+                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Guild Roster & Ranks</h3>
                             <div id="officer-roster-manager-list" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                                 <p class="text-slate-500 text-sm italic">Loading member roster...</p>
                             </div>
@@ -677,7 +675,9 @@
 
                 const roleData = await checkDiscordRoles(session);
                 const isOfficer = roleData.isGuildLeader || roleData.isOfficer;
-                const assignedRole = roleData.isGuildLeader ? 'Guild Leader' : (roleData.isOfficer ? 'Officer' : 'Member');
+                
+                // Map Discord roles to Guild Ranks
+                const assignedRole = roleData.isGuildLeader ? 'Grandmaster' : (roleData.isOfficer ? 'Knight-Commander' : 'Squire');
 
                 if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
 
@@ -729,11 +729,11 @@
             }
         }
 
-        // Auto-Sync User to Database Roster
+        // Auto-Sync User to Database Roster (Default Rank = Squire)
         async function syncUserToDatabaseRoster(session, assignedRole) {
             const userMeta = session.user.user_metadata;
             const discordId = userMeta.provider_id || session.user.identities?.[0]?.id || userMeta.sub;
-            const discordName = userMeta.full_name || userMeta.name || userMeta.email || "Member";
+            const discordName = userMeta.full_name || userMeta.name || userMeta.email || "Squire";
 
             const { data: existingMember } = await supabaseClient
                 .from('guild_members')
@@ -773,7 +773,7 @@
             document.getElementById('profile-class').value = currentUserProfile.character_class || 'Paladin';
             document.getElementById('profile-level').value = currentUserProfile.character_level || 1;
             document.getElementById('profile-focus').value = currentUserProfile.focus || 'PvE Dungeons';
-            document.getElementById('profile-role').value = currentUserProfile.role || 'Member';
+            document.getElementById('profile-role').value = currentUserProfile.role || 'Squire';
         }
 
         async function saveUserProfile() {
@@ -927,7 +927,6 @@
                 return;
             }
 
-            // Post Discord Webhook Alert
             try {
                 await fetch(DISCORD_WEBHOOK_URL, {
                     method: 'POST',
@@ -995,7 +994,7 @@
                 name: m.in_game_name,
                 class: m.character_class || "Fighter",
                 level: m.character_level || 1,
-                rank: m.role || "Member",
+                rank: m.role || "Squire",
                 focus: m.focus || "PvE Dungeons",
                 discord: m.username || m.discord_id || "N/A"
             })) : [];
@@ -1029,8 +1028,9 @@
 
             filtered.forEach(m => {
                 let rankStyle = "text-slate-400 border-slate-800 bg-slate-950";
-                if (m.rank === "Grandmaster" || m.rank === "Guild Leader") rankStyle = "text-gold-400 border-gold-800/40 bg-gold-950/30";
-                if (m.rank === "Officer") rankStyle = "text-amber-500 border-amber-900/40 bg-amber-950/30";
+                if (m.rank === "Grandmaster") rankStyle = "text-gold-400 border-gold-800/40 bg-gold-950/30";
+                if (m.rank === "Knight-Commander") rankStyle = "text-amber-500 border-amber-900/40 bg-amber-950/30";
+                if (m.rank === "Knight") rankStyle = "text-indigo-400 border-indigo-900/40 bg-indigo-950/30";
 
                 const card = document.createElement('div');
                 card.className = "bg-slate-900 p-5 rounded-xl border border-slate-850 flex flex-col justify-between hover:border-gold-900/30 transition-all";
@@ -1078,12 +1078,10 @@
                     </div>
                     <div class="flex items-center space-x-2">
                         <select onchange="updateMemberRoleInSupabase('${m.id}', this.value)" class="bg-slate-900 border border-slate-800 text-xs rounded px-2 py-1 text-gold-400">
-                            <option value="Guild Leader" ${m.role === 'Guild Leader' ? 'selected' : ''}>Guild Leader</option>
                             <option value="Grandmaster" ${m.role === 'Grandmaster' ? 'selected' : ''}>Grandmaster</option>
-                            <option value="Officer" ${m.role === 'Officer' ? 'selected' : ''}>Officer</option>
-                            <option value="Spoon Knight" ${m.role === 'Spoon Knight' ? 'selected' : ''}>Spoon Knight</option>
-                            <option value="Initiate" ${m.role === 'Initiate' ? 'selected' : ''}>Initiate</option>
-                            <option value="Member" ${m.role === 'Member' ? 'selected' : ''}>Member</option>
+                            <option value="Knight-Commander" ${m.role === 'Knight-Commander' ? 'selected' : ''}>Knight-Commander</option>
+                            <option value="Knight" ${m.role === 'Knight' ? 'selected' : ''}>Knight</option>
+                            <option value="Squire" ${m.role === 'Squire' ? 'selected' : ''}>Squire</option>
                         </select>
                         <button onclick="deleteMemberInSupabase('${m.id}')" class="px-2.5 py-1 bg-red-900/60 hover:bg-red-800 text-red-200 rounded border border-red-800/40">
                             Remove
@@ -1100,9 +1098,9 @@
                 .eq('id', memberId);
 
             if (error) {
-                showNotification("Error updating member role: " + error.message, "error");
+                showNotification("Error updating member rank: " + error.message, "error");
             } else {
-                showNotification("Member role updated!");
+                showNotification("Member rank updated!");
                 await fetchRosterFromSupabase();
             }
         }
@@ -1215,7 +1213,6 @@
                 return;
             }
 
-            // Post Discord Webhook Alert
             try {
                 await fetch(DISCORD_WEBHOOK_URL, {
                     method: 'POST',
@@ -1475,7 +1472,7 @@
                         ${app.status === 'pending' ? `
                             <div class="flex gap-2">
                                 <button onclick="processAppInSupabase('${app.id}', 'approved')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded transition-all uppercase tracking-wider">
-                                    Approve & Add to Roster
+                                    Approve & Add as Squire
                                 </button>
                                 <button onclick="processAppInSupabase('${app.id}', 'rejected')" class="px-4 py-1.5 bg-red-900/50 hover:bg-red-800/80 text-red-200 border border-red-800/40 text-xs rounded transition-all uppercase tracking-wider">
                                     Reject
@@ -1487,6 +1484,7 @@
             `).join('');
         }
 
+        // Approve Application & Auto-Add as Squire to DB Roster
         async function processAppInSupabase(appId, decision) {
             const { error: appErr } = await supabaseClient
                 .from('applications')
@@ -1512,10 +1510,10 @@
                         in_game_name: appData.character_name,
                         character_class: appData.character_class,
                         character_level: appData.character_level,
-                        role: 'Initiate',
+                        role: 'Squire',
                         focus: appData.notes || 'PvE Dungeons'
                     }]);
-                    showNotification(`${appData.character_name} approved and added to live roster!`);
+                    showNotification(`${appData.character_name} approved and added as Squire!`);
                 }
             } else {
                 showNotification("Application rejected.");
