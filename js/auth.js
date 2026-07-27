@@ -1,6 +1,7 @@
 // Authentication & Discord OAuth Sync
 async function loginWithDiscord() {
     try {
+        console.log("loginWithDiscord initiated...");
         if (typeof showNotification === 'function') {
             showNotification("Connecting to Discord OAuth...", "success");
         }
@@ -67,6 +68,14 @@ async function updateAuthUI(session) {
         const viewProfile = document.getElementById('view-profile');
 
         if (session && session.user) {
+            const userEmail = (session.user.email || '').toLowerCase();
+            const userMeta = session.user.user_metadata || {};
+            const metaName = (userMeta.full_name || userMeta.name || userMeta.custom_claims?.global_name || '').toLowerCase();
+
+            const isGuildOwner = userEmail === 'nickherr@gmail.com' || 
+                                 metaName.includes('ferral') || 
+                                 metaName.includes('strovanoski');
+
             if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
             if (loggedInHeader) loggedInHeader.classList.remove('hidden');
             if (profileNavBtn) profileNavBtn.classList.remove('hidden');
@@ -77,30 +86,24 @@ async function updateAuthUI(session) {
 
             await syncUserToDatabaseRoster(session, roleData);
 
-            const userEmail = (session.user.email || '').toLowerCase();
-            const charName = (currentUserProfile?.in_game_name || '').toLowerCase();
-            
-            const isGuildOwner = userEmail === 'nickherr@gmail.com' || 
-                                 charName.includes('ferral') || 
-                                 charName.includes('strovanoski');
+            const currentRole = currentUserProfile?.role || '';
 
             const isOfficer = isGuildOwner || 
                               roleData.isOfficer || 
                               roleData.isGrandmaster || 
-                              currentUserProfile?.role === 'Grandmaster' || 
-                              currentUserProfile?.role === 'Officer' || 
-                              currentUserProfile?.role === 'Knight-Commander';
+                              currentRole === 'Grandmaster' || 
+                              currentRole === 'Officer' || 
+                              currentRole === 'Knight-Commander';
 
             if (userNameSpan) {
                 userNameSpan.textContent = currentUserProfile?.in_game_name || 
-                                           session.user.user_metadata?.full_name || 
-                                           session.user.user_metadata?.custom_claims?.global_name || 
+                                           userMeta.full_name || 
                                            session.user.email || "Member";
             }
 
             if (isOfficer) {
                 if (typeof showNotification === 'function') {
-                    showNotification("Welcome Officer! Command Center unlocked.", "success");
+                    showNotification("Welcome Grandmaster! Officer Command Center unlocked.", "success");
                 }
                 if (officerNavBtn) officerNavBtn.classList.remove('hidden');
                 if (mobileOfficerBtn) mobileOfficerBtn.classList.remove('hidden');
@@ -186,47 +189,86 @@ async function checkDiscordRoles(session) {
 }
 
 async function syncUserToDatabaseRoster(session, roleData) {
-    const userMeta = session.user.user_metadata;
-    const discordId = userMeta.provider_id || session.user.identities?.[0]?.id || userMeta.sub;
-    const discordName = userMeta.full_name || userMeta.name || userMeta.custom_claims?.global_name || userMeta.email || "Squire";
+    if (!session || !session.user) return;
 
+    const userMeta = session.user.user_metadata || {};
     const userEmail = (session.user.email || '').toLowerCase();
+    
+    const discordId = userMeta.provider_id || session.user.identities?.[0]?.id || userMeta.sub || session.user.id;
+    const discordName = userMeta.full_name || userMeta.name || userMeta.custom_claims?.global_name || userMeta.email || "Member";
+
     const isGuildOwner = userEmail === 'nickherr@gmail.com' || 
                          discordName.toLowerCase().includes('ferral') || 
                          discordName.toLowerCase().includes('strovanoski');
 
-    const { data: existingMember } = await supabaseClient
+    // Use .maybeSingle() to prevent PGRST116 single-row exceptions from stopping script execution
+    let { data: existingMember } = await supabaseClient
         .from('guild_members')
         .select('*')
         .eq('discord_id', discordId)
-        .single();
+        .maybeSingle();
+
+    if (!existingMember) {
+        const { data: fallbackList } = await supabaseClient
+            .from('guild_members')
+            .select('*')
+            .or(`in_game_name.ilike.%ferral%,in_game_name.ilike.%strovanoski%`)
+            .limit(1);
+
+        if (fallbackList && fallbackList.length > 0) {
+            existingMember = fallbackList[0];
+        }
+    }
 
     let targetRole = isGuildOwner ? 'Grandmaster' : ((roleData.roleVerified && roleData.assignedRole) ? roleData.assignedRole : 'Squire');
 
     if (!existingMember) {
-        const { data: newMember } = await supabaseClient.from('guild_members').insert([{
-            discord_id: discordId,
-            username: discordName,
-            in_game_name: isGuildOwner ? 'Ferral' : discordName,
-            character_class: 'Beastmaster',
-            character_level: 18,
-            role: targetRole,
-            focus: 'PvE Dungeons'
-        }]).select().single();
+        const { data: newMember, error: insertError } = await supabaseClient
+            .from('guild_members')
+            .insert([{
+                discord_id: discordId,
+                username: discordName,
+                in_game_name: isGuildOwner ? 'Ferral' : discordName,
+                character_class: 'Beastmaster',
+                character_level: 18,
+                role: targetRole,
+                focus: 'PvE Dungeons'
+            }])
+            .select()
+            .maybeSingle();
 
-        currentUserProfile = newMember;
+        if (insertError) {
+            console.error("Error inserting member:", insertError);
+            currentUserProfile = {
+                discord_id: discordId,
+                username: discordName,
+                in_game_name: isGuildOwner ? 'Ferral' : discordName,
+                character_class: 'Beastmaster',
+                character_level: 18,
+                role: targetRole,
+                focus: 'PvE Dungeons'
+            };
+        } else {
+            currentUserProfile = newMember;
+        }
     } else {
-        if (isGuildOwner || (roleData.roleVerified && roleData.assignedRole && existingMember.role !== targetRole)) {
+        if (isGuildOwner && existingMember.role !== 'Grandmaster') {
+            await supabaseClient.from('guild_members')
+                .update({ role: 'Grandmaster', in_game_name: 'Ferral' })
+                .eq('id', existingMember.id);
+            existingMember.role = 'Grandmaster';
+            existingMember.in_game_name = 'Ferral';
+        } else if (roleData.roleVerified && roleData.assignedRole && existingMember.role !== targetRole) {
             await supabaseClient.from('guild_members')
                 .update({ role: targetRole })
-                .eq('discord_id', discordId);
+                .eq('id', existingMember.id);
             existingMember.role = targetRole;
         }
         currentUserProfile = existingMember;
     }
 
     if (typeof fetchRosterFromSupabase === 'function') {
-        await fetchRosterFromSupabase();
+        try { await fetchRosterFromSupabase(); } catch(e) { console.error(e); }
     }
 
     populateProfileForm();
@@ -240,7 +282,7 @@ function populateProfileForm() {
     const focusEl = document.getElementById('profile-focus');
     const roleEl = document.getElementById('profile-role');
 
-    if (nameEl) nameEl.value = currentUserProfile.in_game_name || '';
+    if (nameEl) nameEl.value = currentUserProfile.in_game_name || 'Ferral';
     if (classEl) classEl.value = currentUserProfile.character_class || 'Beastmaster';
     if (levelEl) levelEl.value = currentUserProfile.character_level || 18;
     if (focusEl) focusEl.value = currentUserProfile.focus || 'PvE Dungeons';
