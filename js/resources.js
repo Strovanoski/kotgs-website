@@ -1,28 +1,28 @@
 // Resource Links & Guide Hub with Officer Management
-let guildResourcesList = [
+let defaultResources = [
     {
-        id: "1",
+        id: "res-1",
         title: "Monsters & Memories Official Portal",
         category: "Game Access",
         url: "https://monstersandmemories.com",
         description: "Official game website, news updates, and test schedule notifications."
     },
     {
-        id: "2",
+        id: "res-2",
         title: "Account & Game Launcher",
         category: "Game Access",
         url: "https://account.monstersandmemories.com",
         description: "Download the latest client launcher and manage your testing account."
     },
     {
-        id: "3",
+        id: "res-3",
         title: "Community Map & World Atlas",
         category: "Tools & Guides",
         url: "https://monstersandmemories.com",
         description: "Interactive zone maps, dungeon layouts, and point-of-interest markers."
     },
     {
-        id: "4",
+        id: "res-4",
         title: "Class & Item Database",
         category: "Tools & Guides",
         url: "https://monstersandmemories.com",
@@ -30,16 +30,22 @@ let guildResourcesList = [
     }
 ];
 
+let guildResourcesList = JSON.parse(localStorage.getItem('kotgs_guild_resources')) || defaultResources;
 let editingResourceId = null;
 
 async function fetchResourcesFromSupabase() {
-    const { data, error } = await supabaseClient
-        .from('guild_resources')
-        .select('*')
-        .order('created_at', { ascending: true });
+    try {
+        const { data, error } = await supabaseClient
+            .from('guild_resources')
+            .select('*')
+            .order('created_at', { ascending: true });
 
-    if (!error && data && data.length > 0) {
-        guildResourcesList = data;
+        if (!error && data && data.length > 0) {
+            guildResourcesList = data;
+            localStorage.setItem('kotgs_guild_resources', JSON.stringify(data));
+        }
+    } catch (e) {
+        console.warn("Could not fetch resources from Supabase:", e);
     }
 
     renderResourcesUI();
@@ -50,14 +56,19 @@ function renderResourcesUI() {
     const container = document.getElementById('resources-grid');
     if (!container) return;
 
+    if (guildResourcesList.length === 0) {
+        container.innerHTML = `<p class="text-slate-500 text-sm italic col-span-full text-center py-12">No resources available.</p>`;
+        return;
+    }
+
     container.innerHTML = guildResourcesList.map(res => `
-        <a href="${res.url}" target="_blank" class="bg-slate-900 p-6 rounded-xl border border-slate-800 hover:border-gold-700/60 shadow-xl transition-all block group">
+        <a href="${res.url}" target="_blank" class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 hover:border-gold-700/60 shadow-xl transition-all block group">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-[10px] font-bold text-gold-500 uppercase tracking-widest bg-gold-950 px-2 py-0.5 rounded border border-gold-900/50">${res.category}</span>
                 <span class="text-slate-500 group-hover:text-gold-400 transition-colors">↗</span>
             </div>
             <h3 class="text-lg font-bold font-serif text-slate-100 group-hover:text-gold-300 transition-colors">${res.title}</h3>
-            <p class="text-slate-400 text-xs mt-2 leading-relaxed">${res.description}</p>
+            <p class="text-slate-400 text-xs mt-2 leading-relaxed">${res.description || ''}</p>
         </a>
     `).join('');
 }
@@ -72,7 +83,7 @@ function renderOfficerResourcesManagerUI() {
     }
 
     container.innerHTML = guildResourcesList.map(res => `
-        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between gap-3 text-xs">
+        <div class="p-3 bg-[#070b12] rounded-lg border border-gold-900/30 flex items-center justify-between gap-3 text-xs">
             <div class="truncate">
                 <span class="text-gold-500 font-bold">[${res.category}]</span>
                 <span class="text-slate-200 font-bold ml-1">${res.title}</span>
@@ -91,7 +102,7 @@ function renderOfficerResourcesManagerUI() {
 }
 
 function openEditResource(id) {
-    const res = guildResourcesList.find(r => r.id === id);
+    const res = guildResourcesList.find(r => String(r.id) === String(id));
     if (!res) return;
 
     editingResourceId = id;
@@ -126,25 +137,48 @@ async function addNewResource() {
         return;
     }
 
+    const payload = {
+        title: titleIn.value.trim(),
+        category: catIn.value,
+        url: urlIn.value.trim(),
+        description: descIn.value.trim()
+    };
+
     if (editingResourceId) {
         showNotification("Updating resource...");
-        await supabaseClient.from('guild_resources').update({
-            title: titleIn.value.trim(),
-            category: catIn.value,
-            url: urlIn.value.trim(),
-            description: descIn.value.trim()
-        }).eq('id', editingResourceId);
+        
+        const idx = guildResourcesList.findIndex(r => String(r.id) === String(editingResourceId));
+        if (idx !== -1) {
+            guildResourcesList[idx] = { ...guildResourcesList[idx], ...payload };
+        }
+        localStorage.setItem('kotgs_guild_resources', JSON.stringify(guildResourcesList));
+
+        if (!String(editingResourceId).startsWith('res-')) {
+            const { error } = await supabaseClient.from('guild_resources').update(payload).eq('id', editingResourceId);
+            if (error) console.error("Supabase update error:", error);
+        } else {
+            const { data: newRow } = await supabaseClient.from('guild_resources').insert([payload]).select().maybeSingle();
+            if (newRow && idx !== -1) {
+                guildResourcesList[idx] = newRow;
+                localStorage.setItem('kotgs_guild_resources', JSON.stringify(guildResourcesList));
+            }
+        }
 
         showNotification("Resource link updated successfully!");
         cancelEditResource();
     } else {
         showNotification("Adding resource...");
-        await supabaseClient.from('guild_resources').insert([{
-            title: titleIn.value.trim(),
-            category: catIn.value,
-            url: urlIn.value.trim(),
-            description: descIn.value.trim()
-        }]);
+        
+        const localObj = { id: 'res-' + Date.now(), ...payload };
+        guildResourcesList.push(localObj);
+        localStorage.setItem('kotgs_guild_resources', JSON.stringify(guildResourcesList));
+
+        const { data: newRow, error } = await supabaseClient.from('guild_resources').insert([payload]).select().maybeSingle();
+        if (newRow) {
+            const idx = guildResourcesList.findIndex(r => r.id === localObj.id);
+            if (idx !== -1) guildResourcesList[idx] = newRow;
+            localStorage.setItem('kotgs_guild_resources', JSON.stringify(guildResourcesList));
+        }
 
         showNotification("New resource link added!");
         titleIn.value = "";
@@ -152,16 +186,26 @@ async function addNewResource() {
         descIn.value = "";
     }
 
-    await fetchResourcesFromSupabase();
+    renderResourcesUI();
+    renderOfficerResourcesManagerUI();
 }
 
 async function deleteResource(id) {
     if (!confirm("Are you sure you want to delete this resource link?")) return;
 
     showNotification("Deleting resource...");
-    await supabaseClient.from('guild_resources').delete().eq('id', id);
+    
+    guildResourcesList = guildResourcesList.filter(r => String(r.id) !== String(id));
+    localStorage.setItem('kotgs_guild_resources', JSON.stringify(guildResourcesList));
+
+    if (!String(id).startsWith('res-')) {
+        const { error } = await supabaseClient.from('guild_resources').delete().eq('id', id);
+        if (error) console.error("Supabase delete error:", error);
+    }
+
     showNotification("Resource link deleted.");
-    await fetchResourcesFromSupabase();
+    renderResourcesUI();
+    renderOfficerResourcesManagerUI();
 }
 
 window.addEventListener('DOMContentLoaded', () => {

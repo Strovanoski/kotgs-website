@@ -1,15 +1,37 @@
 // Victory Archive & Screenshot Gallery with Officer Management
-let galleryItems = [];
+let defaultGallery = [
+    {
+        id: "gal-1",
+        title: "Dungeon Excursion Victory",
+        date: "May 12, 2026",
+        caption: "The vanguard squad clearing the deeper crypts during the test phase.",
+        imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        id: "gal-2",
+        title: "Sierra's The Realm Legacy (1996)",
+        date: "Est. 1996",
+        caption: "Founding members of the Knights of the Golden Spoon gathered in Sierra's online realm.",
+        imageUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80"
+    }
+];
+
+let galleryItems = JSON.parse(localStorage.getItem('kotgs_guild_gallery')) || defaultGallery;
 let editingGalleryId = null;
 
 async function fetchGalleryFromSupabase() {
-    const { data, error } = await supabaseClient
-        .from('guild_gallery')
-        .select('*')
-        .order('created_at', { ascending: false });
+    try {
+        const { data, error } = await supabaseClient
+            .from('guild_gallery')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-    if (!error && data) {
-        galleryItems = data;
+        if (!error && data && data.length > 0) {
+            galleryItems = data;
+            localStorage.setItem('kotgs_guild_gallery', JSON.stringify(data));
+        }
+    } catch (e) {
+        console.warn("Could not fetch gallery from Supabase:", e);
     }
 
     renderGalleryUI();
@@ -33,7 +55,7 @@ function renderGalleryUI() {
             </div>
             <div class="p-5">
                 <h3 class="text-lg font-bold font-serif text-slate-100 group-hover:text-gold-300 transition-colors">${item.title}</h3>
-                <p class="text-slate-400 text-xs mt-2 leading-relaxed">${item.caption}</p>
+                <p class="text-slate-400 text-xs mt-2 leading-relaxed">${item.caption || ''}</p>
             </div>
         </div>
     `).join('');
@@ -67,7 +89,7 @@ function renderOfficerGalleryManagerUI() {
 }
 
 function openEditGallery(id) {
-    const item = galleryItems.find(g => g.id == id);
+    const item = galleryItems.find(g => String(g.id) === String(id));
     if (!item) return;
 
     editingGalleryId = id;
@@ -103,25 +125,48 @@ async function addNewGalleryItem() {
         return;
     }
 
+    const payload = {
+        title: titleIn.value.trim(),
+        date: dateIn.value.trim() || "Campaign Event",
+        image_url: urlIn.value.trim(),
+        caption: capIn.value.trim()
+    };
+
     if (editingGalleryId) {
         showNotification("Updating gallery memory...");
-        await supabaseClient.from('guild_gallery').update({
-            title: titleIn.value.trim(),
-            date: dateIn.value.trim() || "Campaign Event",
-            image_url: urlIn.value.trim(),
-            caption: capIn.value.trim()
-        }).eq('id', editingGalleryId);
+
+        const idx = galleryItems.findIndex(g => String(g.id) === String(editingGalleryId));
+        if (idx !== -1) {
+            galleryItems[idx] = { ...galleryItems[idx], ...payload, imageUrl: payload.image_url };
+        }
+        localStorage.setItem('kotgs_guild_gallery', JSON.stringify(galleryItems));
+
+        if (!String(editingGalleryId).startsWith('gal-')) {
+            const { error } = await supabaseClient.from('guild_gallery').update(payload).eq('id', editingGalleryId);
+            if (error) console.error("Supabase update error:", error);
+        } else {
+            const { data: newRow } = await supabaseClient.from('guild_gallery').insert([payload]).select().maybeSingle();
+            if (newRow && idx !== -1) {
+                galleryItems[idx] = newRow;
+                localStorage.setItem('kotgs_guild_gallery', JSON.stringify(galleryItems));
+            }
+        }
 
         showNotification("Gallery item updated successfully!");
         cancelEditGallery();
     } else {
         showNotification("Adding gallery memory...");
-        await supabaseClient.from('guild_gallery').insert([{
-            title: titleIn.value.trim(),
-            date: dateIn.value.trim() || "Campaign Event",
-            image_url: urlIn.value.trim(),
-            caption: capIn.value.trim()
-        }]);
+
+        const localObj = { id: 'gal-' + Date.now(), ...payload, imageUrl: payload.image_url };
+        galleryItems.push(localObj);
+        localStorage.setItem('kotgs_guild_gallery', JSON.stringify(galleryItems));
+
+        const { data: newRow, error } = await supabaseClient.from('guild_gallery').insert([payload]).select().maybeSingle();
+        if (newRow) {
+            const idx = galleryItems.findIndex(g => g.id === localObj.id);
+            if (idx !== -1) galleryItems[idx] = newRow;
+            localStorage.setItem('kotgs_guild_gallery', JSON.stringify(galleryItems));
+        }
 
         showNotification("New memory added to Gallery!");
         titleIn.value = "";
@@ -130,16 +175,26 @@ async function addNewGalleryItem() {
         capIn.value = "";
     }
 
-    await fetchGalleryFromSupabase();
+    renderGalleryUI();
+    renderOfficerGalleryManagerUI();
 }
 
 async function deleteGalleryItem(id) {
     if (!confirm("Are you sure you want to delete this screenshot/memory?")) return;
 
     showNotification("Deleting gallery item...");
-    await supabaseClient.from('guild_gallery').delete().eq('id', id);
+
+    galleryItems = galleryItems.filter(g => String(g.id) !== String(id));
+    localStorage.setItem('kotgs_guild_gallery', JSON.stringify(galleryItems));
+
+    if (!String(id).startsWith('gal-')) {
+        const { error } = await supabaseClient.from('guild_gallery').delete().eq('id', id);
+        if (error) console.error("Supabase delete error:", error);
+    }
+
     showNotification("Gallery item deleted.");
-    await fetchGalleryFromSupabase();
+    renderGalleryUI();
+    renderOfficerGalleryManagerUI();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
