@@ -40,12 +40,12 @@
     <!-- Header Navigation -->
     <header class="bg-[#0a0f1d]/95 border-b border-gold-800/40 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
+            <div class="flex items-center justify-between h-20 gap-4">
                 <!-- Guild Crest Logo & Title -->
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="switchTab('home')">
                     <img src="assets/guild-icon.png" alt="Knights of the Golden Spoon Crest" class="w-12 h-12 object-contain rounded-lg shadow-lg border border-gold-400/40 bg-slate-950/80 p-0.5 hover:scale-105 transition-transform">
                     <div>
-                        <h1 class="text-xl md:text-2xl font-bold font-serif tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-gold-100 via-gold-400 to-amber-500">
+                        <h1 class="text-xl md:text-2xl font-bold font-serif tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-gold-100 via-gold-400 to-amber-500 whitespace-nowrap">
                             Knights of the Golden Spoon
                         </h1>
                         <p class="text-[10px] uppercase tracking-widest text-gold-500 font-semibold">Monsters & Memories Guild</p>
@@ -53,7 +53,7 @@
                 </div>
 
                 <!-- Desktop Navigation -->
-                <nav class="hidden md:flex space-x-1">
+                <nav class="hidden xl:flex space-x-1 items-center">
                     <button onclick="switchTab('home')" id="nav-home" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-[#0c1222]/80 border border-gold-900/30">Home</button>
                     <button onclick="switchTab('roster')" id="nav-roster" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-[#0c1222]/40">Roster</button>
                     <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-[#0c1222]/40">Apply</button>
@@ -85,7 +85,7 @@
                     </div>
                 </div>
 
-                <div class="md:hidden">
+                <div class="xl:hidden">
                     <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-gold-400 p-2 focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
                     </button>
@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <div id="mobile-menu" class="hidden md:hidden bg-[#0a0f1d] border-b border-gold-900/50 px-4 py-3 space-y-2">
+        <div id="mobile-menu" class="hidden xl:hidden bg-[#0a0f1d] border-b border-gold-900/50 px-4 py-3 space-y-2">
             <button onclick="switchTab('home'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-gold-400 bg-[#0c1222]">Home</button>
             <button onclick="switchTab('roster'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Roster</button>
             <button onclick="switchTab('recruitment'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Apply</button>
@@ -558,7 +558,7 @@
                                     <button onclick="addNewResource()" id="publish-res-btn" class="flex-grow py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
                                         Add Resource Link
                                     </button>
-                                    <button onclick="cancelEditResource()" id="cancel-res-btn" class="hidden px-4 py-2 bg-[#070b12] hover:bg-slate-800 text-slate-300 font-semibold rounded-lg text-sm transition-colors border border-gold-900/30">
+                                    <button onclick="cancelEditResource()" id="cancel-res-btn" class="hidden px-4 py-2 bg-[#070b12] hover:bg-slate-800 text-slate-300 font-semibold rounded-lg text-sm transition-colors">
                                         Cancel
                                     </button>
                                 </div>
@@ -589,7 +589,7 @@
                                     <button onclick="addNewGalleryItem()" id="publish-gal-btn" class="flex-grow py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
                                         Add Memory to Gallery
                                     </button>
-                                    <button onclick="cancelEditGallery()" id="cancel-gal-btn" class="hidden px-4 py-2 bg-[#070b12] hover:bg-slate-800 text-slate-300 font-semibold rounded-lg text-sm transition-colors border border-gold-900/30">
+                                    <button onclick="cancelEditGallery()" id="cancel-gal-btn" class="hidden px-4 py-2 bg-[#070b12] hover:bg-slate-800 text-slate-300 font-semibold rounded-lg text-sm transition-colors">
                                         Cancel
                                     </button>
                                 </div>
