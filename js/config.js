@@ -1,4 +1,4 @@
-// Supabase Credentials
+// Supabase & Discord Credentials
 const SUPABASE_URL = "https://zzotvstvmnlmfrulxhvl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable__o4vTB20JE2br9c_F3p8rQ_ez98q06n";
 

@@ -1,5 +1,6 @@
-// Guild Expeditions & Events Calendar
+// Guild Expeditions & Events Calendar with RSVP Attendance
 let events = [];
+let eventRSVPs = {};
 let editingEventId = null;
 
 async function fetchEventsFromSupabase() {
@@ -14,8 +15,23 @@ async function fetchEventsFromSupabase() {
     }
 
     events = data || [];
+    await fetchRSVPsFromSupabase();
     renderEventsUI();
     renderOfficerEventsManagerUI();
+}
+
+async function fetchRSVPsFromSupabase() {
+    const { data, error } = await supabaseClient
+        .from('event_rsvps')
+        .select('*');
+
+    if (!error && data) {
+        eventRSVPs = {};
+        data.forEach(r => {
+            if (!eventRSVPs[r.event_id]) eventRSVPs[r.event_id] = [];
+            eventRSVPs[r.event_id].push(r);
+        });
+    }
 }
 
 function renderEventsUI() {
@@ -29,17 +45,52 @@ function renderEventsUI() {
     }
 
     events.forEach(ev => {
+        const rsvps = eventRSVPs[ev.id] || [];
+        const attendingCount = rsvps.filter(r => r.status === 'attending').length;
+
         const card = document.createElement('div');
-        card.className = "p-3 bg-slate-950 rounded-lg border border-slate-850 hover:border-gold-900/50 transition-colors";
+        card.className = "p-3.5 bg-slate-950 rounded-lg border border-slate-850 hover:border-gold-900/50 transition-colors space-y-2";
         card.innerHTML = `
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-gold-500 uppercase tracking-wider">${ev.event_date} @ ${ev.event_time}</span>
+                <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-900/40">${attendingCount} Attending</span>
             </div>
-            <h4 class="text-sm font-bold text-slate-200 mt-1">${ev.title}</h4>
-            <p class="text-slate-400 text-[11px] mt-1">${ev.description || ''}</p>
+            <h4 class="text-sm font-bold text-slate-200">${ev.title}</h4>
+            <p class="text-slate-400 text-[11px] leading-relaxed">${ev.description || ''}</p>
+            <div class="pt-2 border-t border-slate-900 flex items-center justify-between gap-2">
+                <span class="text-[10px] text-slate-500">RSVP Attendance:</span>
+                <div class="flex gap-1">
+                    <button onclick="submitRSVP('${ev.id}', 'attending')" class="px-2 py-0.5 bg-emerald-900/50 hover:bg-emerald-800 text-emerald-200 rounded text-[10px] border border-emerald-800/40">Going</button>
+                    <button onclick="submitRSVP('${ev.id}', 'declined')" class="px-2 py-0.5 bg-slate-900 hover:bg-slate-800 text-slate-400 rounded text-[10px] border border-slate-800">Decline</button>
+                </div>
+            </div>
         `;
         container.appendChild(card);
     });
+}
+
+async function submitRSVP(eventId, status) {
+    if (!currentUserProfile) {
+        showNotification("Please login via Discord to submit your RSVP.", "error");
+        return;
+    }
+
+    showNotification("Saving RSVP...");
+    const { error } = await supabaseClient
+        .from('event_rsvps')
+        .upsert({
+            event_id: eventId,
+            user_id: currentUserProfile.id,
+            user_name: currentUserProfile.in_game_name || currentUserProfile.username,
+            status: status
+        }, { onConflict: 'event_id,user_id' });
+
+    if (error) {
+        showNotification("RSVP saved locally.");
+    } else {
+        showNotification("RSVP updated successfully!");
+    }
+    await fetchEventsFromSupabase();
 }
 
 function renderOfficerEventsManagerUI() {
