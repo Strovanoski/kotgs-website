@@ -37,7 +37,7 @@ async function fetchRulesAndOathFromSupabase() {
             localStorage.setItem('kotgs_guild_oath', oathData.value);
         }
     } catch (e) {
-        console.error("Error fetching oath from Supabase:", e);
+        console.warn("Could not load oath from Supabase (using local storage):", e);
     }
 
     try {
@@ -50,7 +50,7 @@ async function fetchRulesAndOathFromSupabase() {
             guildRulesList = rulesData;
         }
     } catch (e) {
-        console.error("Error fetching rules from Supabase:", e);
+        console.warn("Could not load rules from Supabase (using default charter):", e);
     }
 
     renderOathUI();
@@ -106,9 +106,9 @@ async function saveOathAndCharterFromOfficer() {
 
     if (oathError) {
         console.error("Supabase Oath Save Error:", oathError);
-        showNotification("Oath saved locally (Supabase table error: " + oathError.message + ")", "error");
+        showNotification("Saved to local browser storage. (Note: Run Supabase SQL setup script to enable cloud persistence)", "error");
     } else {
-        showNotification("Guild Oath and Charter updated successfully!");
+        showNotification("Guild Oath and Charter updated in Supabase!");
     }
 
     if (charterRaw) {
