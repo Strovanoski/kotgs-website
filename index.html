@@ -81,6 +81,7 @@
                     <button onclick="switchTab('home')" id="nav-home" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30">Home</button>
                     <button onclick="switchTab('roster')" id="nav-roster" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Roster</button>
                     <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Apply</button>
+                    <button onclick="switchTab('news-archive')" id="nav-news-archive" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Chronicles</button>
                     <button onclick="switchTab('profile')" id="nav-profile" class="hidden px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">My Profile</button>
                     <button onclick="switchTab('officer')" id="nav-officer" class="hidden px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
                         <span>Officers</span>
@@ -126,6 +127,7 @@
             <button onclick="switchTab('home'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-gold-400 bg-slate-800">Home</button>
             <button onclick="switchTab('roster'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Roster</button>
             <button onclick="switchTab('recruitment'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Apply</button>
+            <button onclick="switchTab('news-archive'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Chronicles</button>
             <button onclick="switchTab('profile'); toggleMobileMenu()" id="mobile-nav-profile" class="hidden block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">My Profile</button>
             <button onclick="switchTab('officer'); toggleMobileMenu()" id="mobile-nav-officer" class="hidden block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Officer Center</button>
             <button onclick="loginWithDiscord()" class="block w-full text-center px-3 py-2 rounded text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Member Login</button>
@@ -191,27 +193,25 @@
                             </div>
                         </div>
 
+                        <!-- Dynamic Guild News Feed (Truncated to 5 items) -->
                         <div class="bg-slate-900/80 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <div class="flex items-center justify-between mb-6">
                                 <h3 class="text-2xl font-bold font-serif text-slate-100 flex items-center space-x-2">
                                     <span class="w-2 h-6 bg-gold-600 rounded-full"></span>
                                     <span>Guild News & Campaigns</span>
                                 </h3>
-                                <span class="text-xs text-gold-400 uppercase tracking-widest font-semibold bg-gold-950 px-2 py-1 rounded border border-gold-900/60">Campaign Updates</span>
+                                <span class="text-xs text-gold-400 uppercase tracking-widest font-semibold bg-gold-950 px-2 py-1 rounded border border-gold-900/60">Recent Bulletins</span>
                             </div>
                             
-                            <div class="space-y-6">
-                                <div class="border-b border-slate-800/80 pb-6 last:border-0 last:pb-0">
-                                    <div class="flex items-center space-x-2 text-xs text-slate-400 mb-2">
-                                        <span class="font-semibold text-gold-500">OFFICER BULLETIN</span>
-                                        <span>•</span>
-                                        <span>June 24, 2026</span>
-                                    </div>
-                                    <h4 class="text-lg font-bold text-slate-100 hover:text-gold-400 transition-colors cursor-pointer">Preparing for the Next Test Phase</h4>
-                                    <p class="text-slate-400 text-sm mt-2 leading-relaxed">
-                                        As the development of Monsters & Memories proceeds, we are mobilizing our crafters and gathering materials. Our main focus in the upcoming testing build is establishing key material routes and securing high-tier armor sets for our vanguard fighters.
-                                    </p>
-                                </div>
+                            <div id="news-stream-list" class="space-y-6">
+                                <p class="text-slate-500 text-sm italic">Loading guild news...</p>
+                            </div>
+
+                            <div class="mt-8 pt-4 border-t border-slate-800 flex justify-end">
+                                <button onclick="switchTab('news-archive')" class="text-xs text-gold-400 hover:text-gold-300 font-semibold uppercase tracking-wider flex items-center space-x-1">
+                                    <span>View Full Chronicles & News Archive</span>
+                                    <span>→</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -265,6 +265,29 @@
                             <div id="events-list" class="space-y-3"></div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= NEWS ARCHIVE VIEW ================= -->
+        <section id="view-news-archive" class="view-section py-8 md:py-12 hidden">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6">
+                <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                    <div>
+                        <h2 class="text-3xl font-bold font-serif text-slate-100">Guild Chronicles & News Archive</h2>
+                        <p class="text-slate-400 mt-1">A historical ledger of all officer bulletins, campaign updates, and event reviews.</p>
+                    </div>
+                    <select id="archive-category-filter" onchange="renderNewsArchiveUI()" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-300 text-sm focus:outline-none focus:border-gold-600">
+                        <option value="All">All Categories</option>
+                        <option value="OFFICER BULLETIN">Officer Bulletins</option>
+                        <option value="CAMPAIGN UPDATE">Campaign Updates</option>
+                        <option value="EVENT REVIEW">Event Reviews</option>
+                    </select>
+                </div>
+
+                <div id="full-news-archive-list" class="space-y-6">
+                    <p class="text-slate-500 text-sm italic">Loading archive...</p>
                 </div>
             </div>
         </section>
@@ -441,11 +464,12 @@
                 <div class="mb-8 border-b border-slate-800 pb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-3xl font-bold font-serif text-slate-100">Officer Command Center</h2>
-                        <p class="text-slate-400 mt-1">Manage recruiting applications, create new expeditions, and update class priorities.</p>
+                        <p class="text-slate-400 mt-1">Manage recruiting applications, publish guild news, create new expeditions, and update class priorities.</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- COLUMN 1: Pending Applications -->
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-xl font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
@@ -456,9 +480,49 @@
                                 <p class="text-slate-500 text-sm italic">Loading applications from Supabase...</p>
                             </div>
                         </div>
+
+                        <!-- Published Bulletins Manager -->
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
+                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Live News Bulletins</h3>
+                            <div id="officer-news-manager-list" class="space-y-3">
+                                <p class="text-slate-500 text-sm italic">Loading news for management...</p>
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- COLUMN 2: Expeditions, News & Priorities Manager -->
                     <div class="space-y-8">
+                        <!-- Publish Guild News Bulletin -->
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
+                            <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Publish Guild News / Bulletin</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Category</label>
+                                    <select id="new-news-category" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                        <option value="OFFICER BULLETIN">OFFICER BULLETIN</option>
+                                        <option value="CAMPAIGN UPDATE">CAMPAIGN UPDATE</option>
+                                        <option value="EVENT REVIEW">EVENT REVIEW</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">News Title</label>
+                                    <input type="text" id="new-news-title" placeholder="E.g., Preparing for Next Test Phase" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date Header</label>
+                                    <input type="text" id="new-news-date" placeholder="E.g., July 27, 2026" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Bulletin Content</label>
+                                    <textarea id="new-news-content" rows="4" placeholder="Enter bulletin details..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600"></textarea>
+                                </div>
+                                <button onclick="addNewNews()" class="w-full py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
+                                    Publish News Article
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Schedule New Expedition -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Schedule New Expedition</h3>
                             <div class="space-y-4">
@@ -486,6 +550,7 @@
                             </div>
                         </div>
 
+                        <!-- Class Priorities -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Set Class Priorities</h3>
                             <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2" id="officer-priority-list"></div>
@@ -538,6 +603,7 @@
         let currentUserProfile = null;
         let priorities = {};
         let events = [];
+        let newsArticles = [];
 
         window.addEventListener('DOMContentLoaded', async () => {
             localStorage.removeItem('gms_roster');
@@ -546,6 +612,7 @@
             await fetchRosterFromSupabase();
             await fetchClassPrioritiesFromSupabase();
             await fetchEventsFromSupabase();
+            await fetchNewsFromSupabase();
 
             const { data: { session } } = await supabaseClient.auth.getSession();
             await updateAuthUI(session);
@@ -719,6 +786,150 @@
                 currentUserProfile.character_level = charLevel;
                 currentUserProfile.focus = focus;
                 await fetchRosterFromSupabase();
+            }
+        }
+
+        // Fetch Guild News from Supabase
+        async function fetchNewsFromSupabase() {
+            const { data, error } = await supabaseClient
+                .from('guild_news')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching news:", error.message);
+                return;
+            }
+
+            newsArticles = data || [];
+            renderHomeNewsUI();
+            renderNewsArchiveUI();
+            renderOfficerNewsManagerUI();
+        }
+
+        // Render Home feed (Top 5 items)
+        function renderHomeNewsUI() {
+            const container = document.getElementById('news-stream-list');
+            if (!container) return;
+
+            const top5 = newsArticles.slice(0, 5);
+
+            if (top5.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-sm italic">No recent announcements.</p>`;
+                return;
+            }
+
+            container.innerHTML = top5.map(news => `
+                <div class="border-b border-slate-800/80 pb-6 last:border-0 last:pb-0">
+                    <div class="flex items-center space-x-2 text-xs text-slate-400 mb-2">
+                        <span class="font-semibold text-gold-500">${news.category || 'OFFICER BULLETIN'}</span>
+                        <span>•</span>
+                        <span>${news.news_date}</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-100 hover:text-gold-400 transition-colors">${news.title}</h4>
+                    <p class="text-slate-400 text-sm mt-2 leading-relaxed whitespace-pre-line">${news.content}</p>
+                </div>
+            `).join('');
+        }
+
+        // Render Full News Archive
+        function renderNewsArchiveUI() {
+            const container = document.getElementById('full-news-archive-list');
+            if (!container) return;
+
+            const filterVal = document.getElementById('archive-category-filter')?.value || "All";
+
+            const filtered = newsArticles.filter(n => filterVal === "All" || n.category === filterVal);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-sm italic text-center py-12">No bulletins found for this category.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(news => `
+                <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-850 pb-3">
+                        <span class="font-bold text-xs text-gold-500 tracking-wider">${news.category || 'OFFICER BULLETIN'}</span>
+                        <span class="text-xs text-slate-500 font-mono">${news.news_date}</span>
+                    </div>
+                    <h3 class="text-xl font-bold font-serif text-slate-100">${news.title}</h3>
+                    <p class="text-slate-300 text-sm leading-relaxed whitespace-pre-line">${news.content}</p>
+                </div>
+            `).join('');
+        }
+
+        // Render Officer News Management List
+        function renderOfficerNewsManagerUI() {
+            const container = document.getElementById('officer-news-manager-list');
+            if (!container) return;
+
+            if (newsArticles.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-sm italic">No published bulletins.</p>`;
+                return;
+            }
+
+            container.innerHTML = newsArticles.map(news => `
+                <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between gap-3 text-xs">
+                    <div class="truncate">
+                        <span class="text-gold-500 font-semibold">[${news.category}]</span>
+                        <span class="text-slate-200 font-bold ml-1">${news.title}</span>
+                        <span class="text-slate-500 block text-[10px]">${news.news_date}</span>
+                    </div>
+                    <button onclick="deleteNewsArticle('${news.id}')" class="px-3 py-1 bg-red-900/60 hover:bg-red-800 text-red-200 rounded border border-red-800/40 shrink-0">
+                        Delete
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function addNewNews() {
+            const categoryIn = document.getElementById('new-news-category');
+            const titleIn = document.getElementById('new-news-title');
+            const dateIn = document.getElementById('new-news-date');
+            const contentIn = document.getElementById('new-news-content');
+
+            if (!titleIn.value || !contentIn.value) {
+                showNotification("News requires a Title and Content.", "error");
+                return;
+            }
+
+            const todayStr = dateIn.value.trim() || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            showNotification("Publishing news bulletin...");
+
+            const { error } = await supabaseClient.from('guild_news').insert([{
+                category: categoryIn.value,
+                title: titleIn.value.trim(),
+                news_date: todayStr,
+                content: contentIn.value.trim()
+            }]);
+
+            if (error) {
+                showNotification("Error publishing news: " + error.message, "error");
+                return;
+            }
+
+            showNotification("Guild news article published live!");
+            await fetchNewsFromSupabase();
+
+            titleIn.value = "";
+            dateIn.value = "";
+            contentIn.value = "";
+        }
+
+        async function deleteNewsArticle(id) {
+            if (!confirm("Are you sure you want to delete this news bulletin?")) return;
+
+            const { error } = await supabaseClient
+                .from('guild_news')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                showNotification("Error deleting news: " + error.message, "error");
+            } else {
+                showNotification("News bulletin deleted.");
+                await fetchNewsFromSupabase();
             }
         }
 
