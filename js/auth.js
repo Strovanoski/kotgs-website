@@ -24,6 +24,8 @@ async function updateAuthUI(session) {
     const officerNavBtn = document.getElementById('nav-officer');
     const mobileOfficerBtn = document.getElementById('mobile-nav-officer');
     const discordHeaderBtn = document.getElementById('discord-header-btn');
+    const viewOfficer = document.getElementById('view-officer');
+    const viewProfile = document.getElementById('view-profile');
 
     if (session) {
         if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
@@ -49,7 +51,7 @@ async function updateAuthUI(session) {
         } else {
             if (officerNavBtn) officerNavBtn.classList.add('hidden');
             if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
-            document.getElementById('view-officer').classList.add('hidden');
+            if (viewOfficer) viewOfficer.classList.add('hidden');
         }
     } else {
         if (loggedOutHeader) loggedOutHeader.classList.remove('hidden');
@@ -59,8 +61,8 @@ async function updateAuthUI(session) {
         if (officerNavBtn) officerNavBtn.classList.add('hidden');
         if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
         if (discordHeaderBtn) discordHeaderBtn.classList.remove('hidden');
-        document.getElementById('view-officer').classList.add('hidden');
-        document.getElementById('view-profile').classList.add('hidden');
+        if (viewOfficer) viewOfficer.classList.add('hidden');
+        if (viewProfile) viewProfile.classList.add('hidden');
     }
 }
 
