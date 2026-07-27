@@ -81,6 +81,7 @@
                     <button onclick="switchTab('home')" id="nav-home" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30">Home</button>
                     <button onclick="switchTab('roster')" id="nav-roster" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Roster</button>
                     <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Apply</button>
+                    <button onclick="switchTab('profile')" id="nav-profile" class="hidden px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">My Profile</button>
                     <button onclick="switchTab('officer')" id="nav-officer" class="hidden px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
                         <span>Officers</span>
                         <span id="nav-badge" class="hidden bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
@@ -103,7 +104,7 @@
                         </button>
                     </div>
                     <div id="auth-header-logged-in" class="hidden flex items-center space-x-2">
-                        <span id="header-user-name" class="text-xs text-gold-400 font-semibold"></span>
+                        <span id="header-user-name" class="text-xs text-gold-400 font-semibold cursor-pointer" onclick="switchTab('profile')"></span>
                         <button onclick="logout()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-red-900/60 text-slate-300 hover:text-red-200 text-xs rounded border border-slate-700 transition-colors">
                             Sign Out
                         </button>
@@ -126,6 +127,7 @@
             <button onclick="switchTab('home'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-gold-400 bg-slate-800">Home</button>
             <button onclick="switchTab('roster'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Roster</button>
             <button onclick="switchTab('recruitment'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Apply</button>
+            <button onclick="switchTab('profile'); toggleMobileMenu()" id="mobile-nav-profile" class="hidden block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">My Profile</button>
             <button onclick="switchTab('officer'); toggleMobileMenu()" id="mobile-nav-officer" class="hidden block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Officer Center</button>
             <button onclick="loginWithDiscord()" class="block w-full text-center px-3 py-2 rounded text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Member Login</button>
         </div>
@@ -310,6 +312,55 @@
         </section>
 
 
+        <!-- ================= MY PROFILE VIEW ================= -->
+        <section id="view-profile" class="view-section py-8 md:py-12 hidden">
+            <div class="max-w-2xl mx-auto px-4 sm:px-6">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold font-serif text-slate-100">My Character Profile</h2>
+                    <p class="text-slate-400 mt-1">Manage your character details as they appear on the public Guild Ledger.</p>
+                </div>
+
+                <div class="bg-slate-900 p-6 md:p-8 rounded-xl border border-gold-900/40 shadow-2xl space-y-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">In-Game Character Name</label>
+                        <input type="text" id="profile-char-name" placeholder="E.g., Strovanoski" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Primary Class</label>
+                            <select id="profile-class" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Character Level</label>
+                            <input type="number" id="profile-level" min="1" max="100" placeholder="1" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Primary Specialization Focus</label>
+                        <select id="profile-focus" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600">
+                            <option value="PvE Dungeons">PvE Dungeons / Raids</option>
+                            <option value="Crafting/Economy">Master Crafting & Economy</option>
+                            <option value="Casual Adventurer">Casual Community & Lore</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Assigned Guild Role</label>
+                        <input type="text" id="profile-role" readonly class="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 rounded-lg text-gold-400 font-semibold cursor-not-allowed">
+                    </div>
+
+                    <button onclick="saveUserProfile()" class="w-full py-3 bg-gradient-to-r from-gold-600 to-amber-700 hover:from-gold-500 hover:to-amber-600 text-slate-950 font-bold rounded-lg shadow-lg uppercase tracking-wider text-sm transition-all">
+                        Save Profile Changes
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
         <!-- ================= RECRUITMENT VIEW ================= -->
         <section id="view-recruitment" class="view-section py-8 md:py-12 hidden">
             <div class="max-w-3xl mx-auto px-4 sm:px-6">
@@ -486,13 +537,12 @@
             "Ranger", "Rogue", "Shadow Knight", "Shaman", "Spellblade", "Wizard"
         ];
 
-        // State variables - Purged of static default arrays
         let dbRoster = [];
+        let currentUserProfile = null;
         let priorities = JSON.parse(localStorage.getItem('gms_priorities')) || {};
         let events = JSON.parse(localStorage.getItem('gms_events')) || [];
 
         window.addEventListener('DOMContentLoaded', async () => {
-            // Clear legacy local storage mock roster if present
             localStorage.removeItem('gms_roster');
 
             populateClassSelects();
@@ -521,6 +571,7 @@
 
         async function logout() {
             await supabaseClient.auth.signOut();
+            currentUserProfile = null;
             showNotification("Signed out successfully.");
         }
 
@@ -528,15 +579,26 @@
             const loggedOutHeader = document.getElementById('auth-header-logged-out');
             const loggedInHeader = document.getElementById('auth-header-logged-in');
             const userNameSpan = document.getElementById('header-user-name');
+            const profileNavBtn = document.getElementById('nav-profile');
+            const mobileProfileBtn = document.getElementById('mobile-nav-profile');
             const officerNavBtn = document.getElementById('nav-officer');
             const mobileOfficerBtn = document.getElementById('mobile-nav-officer');
 
             if (session) {
                 if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
                 if (loggedInHeader) loggedInHeader.classList.remove('hidden');
+                if (profileNavBtn) profileNavBtn.classList.remove('hidden');
+                if (mobileProfileBtn) mobileProfileBtn.classList.remove('hidden');
+
+                // Determine Discord Role
+                const roleData = await checkDiscordRoles(session);
+                const isOfficer = roleData.isGuildLeader || roleData.isOfficer;
+                const assignedRole = roleData.isGuildLeader ? 'Guild Leader' : (roleData.isOfficer ? 'Officer' : 'Member');
+
                 if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
 
-                const isOfficer = await verifyDiscordOfficerRole(session);
+                // Auto-sync user into Supabase database roster
+                await syncUserToDatabaseRoster(session, assignedRole);
 
                 if (isOfficer) {
                     showNotification("Welcome Officer! Command Center unlocked.", "success");
@@ -544,7 +606,6 @@
                     if (mobileOfficerBtn) mobileOfficerBtn.classList.remove('hidden');
                     fetchApplicationsFromSupabase();
                 } else {
-                    showNotification("Signed in as Member.", "info");
                     if (officerNavBtn) officerNavBtn.classList.add('hidden');
                     if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
                     document.getElementById('view-officer').classList.add('hidden');
@@ -552,29 +613,121 @@
             } else {
                 if (loggedOutHeader) loggedOutHeader.classList.remove('hidden');
                 if (loggedInHeader) loggedInHeader.classList.add('hidden');
+                if (profileNavBtn) profileNavBtn.classList.add('hidden');
+                if (mobileProfileBtn) mobileProfileBtn.classList.add('hidden');
                 if (officerNavBtn) officerNavBtn.classList.add('hidden');
                 if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
                 document.getElementById('view-officer').classList.add('hidden');
+                document.getElementById('view-profile').classList.add('hidden');
             }
         }
 
-        async function verifyDiscordOfficerRole(session) {
+        async function checkDiscordRoles(session) {
             const providerToken = session.provider_token;
-            if (!providerToken || !DISCORD_GUILD_ID) return false;
+            if (!providerToken || !DISCORD_GUILD_ID) return { isGuildLeader: false, isOfficer: false };
 
             try {
                 const response = await fetch(`https://discord.com/api/v10/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
                     headers: { Authorization: `Bearer ${providerToken}` }
                 });
 
-                if (!response.ok) return false;
+                if (!response.ok) return { isGuildLeader: false, isOfficer: false };
 
                 const memberData = await response.json();
                 const userRoles = memberData.roles || [];
-                return userRoles.includes(GUILD_LEADER_ROLE_ID) || userRoles.includes(OFFICER_ROLE_ID);
+
+                return {
+                    isGuildLeader: userRoles.includes(GUILD_LEADER_ROLE_ID),
+                    isOfficer: userRoles.includes(OFFICER_ROLE_ID)
+                };
             } catch (err) {
-                console.error("Error verifying Discord roles:", err);
-                return false;
+                console.error("Error checking Discord roles:", err);
+                return { isGuildLeader: false, isOfficer: false };
+            }
+        }
+
+        // Auto-Sync Logged-In Discord User to Database Roster
+        async function syncUserToDatabaseRoster(session, assignedRole) {
+            const userMeta = session.user.user_metadata;
+            const discordId = userMeta.provider_id || session.user.identities?.[0]?.id || userMeta.sub;
+            const discordName = userMeta.full_name || userMeta.name || userMeta.email || "Member";
+
+            // Check if user is already in guild_members table
+            const { data: existingMember } = await supabaseClient
+                .from('guild_members')
+                .select('*')
+                .eq('discord_id', discordId)
+                .single();
+
+            if (!existingMember) {
+                // Auto insert new profile
+                const { data: newMember } = await supabaseClient.from('guild_members').insert([{
+                    discord_id: discordId,
+                    username: discordName,
+                    in_game_name: discordName,
+                    character_class: 'Paladin',
+                    character_level: 1,
+                    role: assignedRole,
+                    focus: 'PvE Dungeons'
+                }]).select().single();
+
+                currentUserProfile = newMember;
+                await fetchRosterFromSupabase();
+            } else {
+                // Update role if changed in Discord
+                if (existingMember.role !== assignedRole) {
+                    await supabaseClient.from('guild_members')
+                        .update({ role: assignedRole })
+                        .eq('discord_id', discordId);
+                    existingMember.role = assignedRole;
+                }
+                currentUserProfile = existingMember;
+            }
+
+            populateProfileForm();
+        }
+
+        function populateProfileForm() {
+            if (!currentUserProfile) return;
+            document.getElementById('profile-char-name').value = currentUserProfile.in_game_name || '';
+            document.getElementById('profile-class').value = currentUserProfile.character_class || 'Paladin';
+            document.getElementById('profile-level').value = currentUserProfile.character_level || 1;
+            document.getElementById('profile-focus').value = currentUserProfile.focus || 'PvE Dungeons';
+            document.getElementById('profile-role').value = currentUserProfile.role || 'Member';
+        }
+
+        async function saveUserProfile() {
+            if (!currentUserProfile) return;
+
+            const charName = document.getElementById('profile-char-name').value.trim();
+            const charClass = document.getElementById('profile-class').value;
+            const charLevel = parseInt(document.getElementById('profile-level').value) || 1;
+            const focus = document.getElementById('profile-focus').value;
+
+            if (!charName) {
+                showNotification("Character name cannot be blank.", "error");
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('guild_members')
+                .update({
+                    in_game_name: charName,
+                    character_class: charClass,
+                    character_level: charLevel,
+                    focus: focus
+                })
+                .eq('id', currentUserProfile.id);
+
+            if (error) {
+                showNotification("Error updating profile: " + error.message, "error");
+            } else {
+                showNotification("Profile updated successfully!");
+                currentUserProfile.in_game_name = charName;
+                currentUserProfile.character_class = charClass;
+                currentUserProfile.character_level = charLevel;
+                currentUserProfile.focus = focus;
+                await fetchRosterFromSupabase();
             }
         }
 
@@ -806,7 +959,6 @@
             `).join('');
         }
 
-        // Approve or Reject Application & Auto-Add to DB Roster
         async function processAppInSupabase(appId, decision) {
             const { error: appErr } = await supabaseClient
                 .from('applications')
@@ -845,24 +997,32 @@
             fetchRosterFromSupabase();
         }
 
-        // UI Helpers
+        // Helper UI Functions
         function populateClassSelects() {
             const rosterFilterSelect = document.getElementById('roster-class-filter');
             const appClassSelect = document.getElementById('app-class');
+            const profileClassSelect = document.getElementById('profile-class');
 
-            rosterFilterSelect.innerHTML = `<option value="All">All Classes</option>`;
-            appClassSelect.innerHTML = `<option value="" disabled selected>Choose your calling...</option>`;
+            if (rosterFilterSelect) rosterFilterSelect.innerHTML = `<option value="All">All Classes</option>`;
+            if (appClassSelect) appClassSelect.innerHTML = `<option value="" disabled selected>Choose your calling...</option>`;
+            if (profileClassSelect) profileClassSelect.innerHTML = ``;
 
             MM_CLASSES.forEach(cls => {
-                const optRoster = document.createElement('option');
-                optRoster.value = cls;
-                optRoster.textContent = cls;
-                rosterFilterSelect.appendChild(optRoster);
-
-                const optApp = document.createElement('option');
-                optApp.value = cls;
-                optApp.textContent = cls;
-                appClassSelect.appendChild(optApp);
+                if (rosterFilterSelect) {
+                    const opt = document.createElement('option');
+                    opt.value = cls; opt.textContent = cls;
+                    rosterFilterSelect.appendChild(opt);
+                }
+                if (appClassSelect) {
+                    const opt = document.createElement('option');
+                    opt.value = cls; opt.textContent = cls;
+                    appClassSelect.appendChild(opt);
+                }
+                if (profileClassSelect) {
+                    const opt = document.createElement('option');
+                    opt.value = cls; opt.textContent = cls;
+                    profileClassSelect.appendChild(opt);
+                }
             });
         }
 
@@ -886,7 +1046,8 @@
 
         function switchTab(tabId) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            const targetSection = document.getElementById(`view-${tabId}`);
+            if (targetSection) targetSection.classList.remove('hidden');
 
             document.querySelectorAll('header nav button').forEach(btn => {
                 btn.className = "px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30";
