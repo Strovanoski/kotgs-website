@@ -5,17 +5,25 @@ window.addEventListener('DOMContentLoaded', async () => {
     localStorage.removeItem('gms_roster');
 
     populateClassSelects();
-    await fetchRosterFromSupabase();
-    await fetchClassPrioritiesFromSupabase();
-    await fetchEventsFromSupabase();
-    await fetchNewsFromSupabase();
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    await updateAuthUI(session);
+    // Isolated content fetches
+    try { if (typeof fetchRosterFromSupabase === 'function') await fetchRosterFromSupabase(); } catch(e) { console.error(e); }
+    try { if (typeof fetchClassPrioritiesFromSupabase === 'function') await fetchClassPrioritiesFromSupabase(); } catch(e) { console.error(e); }
+    try { if (typeof fetchEventsFromSupabase === 'function') await fetchEventsFromSupabase(); } catch(e) { console.error(e); }
+    try { if (typeof fetchNewsFromSupabase === 'function') await fetchNewsFromSupabase(); } catch(e) { console.error(e); }
 
-    supabaseClient.auth.onAuthStateChange(async (_event, session) => {
-        await updateAuthUI(session);
-    });
+    try {
+        if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            await updateAuthUI(session);
+
+            supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+                await updateAuthUI(session);
+            });
+        }
+    } catch (err) {
+        console.error("Auth Session Error:", err);
+    }
 });
 
 function showNotification(msg, type = "success") {
@@ -24,8 +32,8 @@ function showNotification(msg, type = "success") {
     const toast = document.createElement('div');
     toast.className = `p-4 rounded-xl border shadow-lg transition-all duration-300 transform translate-y-2 opacity-0 text-sm font-medium ${
         type === "success" 
-            ? "bg-slate-900 border-gold-600/50 text-gold-200" 
-            : "bg-slate-900 border-red-500/50 text-red-200"
+            ? "bg-[#0a0f1d] border-gold-600/50 text-gold-200" 
+            : "bg-[#0a0f1d] border-red-500/50 text-red-200"
     }`;
     toast.textContent = msg;
     container.appendChild(toast);
@@ -43,16 +51,17 @@ function switchTab(tabId) {
     if (targetSection) targetSection.classList.remove('hidden');
 
     document.querySelectorAll('header nav button').forEach(btn => {
-        btn.className = "px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30";
+        btn.className = "px-3 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-[#0c1222]/40";
     });
     const activeBtn = document.getElementById(`nav-${tabId}`);
     if (activeBtn) {
-        activeBtn.className = "px-4 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30";
+        activeBtn.className = "px-3 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-[#0c1222]/80 border border-gold-900/30";
     }
 }
 
 function toggleMobileMenu() {
-    document.getElementById('mobile-menu').classList.toggle('hidden');
+    const menu = document.getElementById('mobile-menu');
+    if (menu) menu.classList.toggle('hidden');
 }
 
 function populateClassSelects() {
@@ -64,21 +73,23 @@ function populateClassSelects() {
     if (appClassSelect) appClassSelect.innerHTML = `<option value="" disabled selected>Choose your calling...</option>`;
     if (profileClassSelect) profileClassSelect.innerHTML = ``;
 
-    MM_CLASSES.forEach(cls => {
-        if (rosterFilterSelect) {
-            const opt = document.createElement('option');
-            opt.value = cls; opt.textContent = cls;
-            rosterFilterSelect.appendChild(opt);
-        }
-        if (appClassSelect) {
-            const opt = document.createElement('option');
-            opt.value = cls; opt.textContent = cls;
-            appClassSelect.appendChild(opt);
-        }
-        if (profileClassSelect) {
-            const opt = document.createElement('option');
-            opt.value = cls; opt.textContent = cls;
-            profileClassSelect.appendChild(opt);
-        }
-    });
+    if (typeof MM_CLASSES !== 'undefined') {
+        MM_CLASSES.forEach(cls => {
+            if (rosterFilterSelect) {
+                const opt = document.createElement('option');
+                opt.value = cls; opt.textContent = cls;
+                rosterFilterSelect.appendChild(opt);
+            }
+            if (appClassSelect) {
+                const opt = document.createElement('option');
+                opt.value = cls; opt.textContent = cls;
+                appClassSelect.appendChild(opt);
+            }
+            if (profileClassSelect) {
+                const opt = document.createElement('option');
+                opt.value = cls; opt.textContent = cls;
+                profileClassSelect.appendChild(opt);
+            }
+        });
+    }
 }
