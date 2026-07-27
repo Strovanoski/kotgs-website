@@ -36,20 +36,16 @@
     <header class="bg-slate-900 border-b border-gold-800/40 sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <!-- Logo/Title -->
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
-                    <div class="p-2.5 bg-gradient-to-br from-gold-600 to-amber-950 rounded-lg shadow-lg border border-gold-400/30">
-                        <svg class="w-8 h-8 text-gold-100" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2A4 4 0 0 0 8 6c0 3.31 4 9 4 9s4-5.69 4-9a4 4 0 0 0-4-4zm0 2c1.1 0 2 .9 2 2s-2 3.5-2 3.5S10 8 10 6s.9-2 2-2zm-1 11h2v7h-2z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-xl md:text-2xl font-bold font-serif tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-gold-100 via-gold-400 to-amber-500">
-                            Knights of the Golden Spoon
-                        </h1>
-                        <p class="text-[10px] uppercase tracking-widest text-gold-500 font-semibold">Monsters & Memories Guild</p>
-                    </div>
-                </div>
+<!-- Guild Crest Logo & Title -->
+<div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+    <img src="assets/guild-icon.png" alt="Knights of the Golden Spoon Crest" class="w-12 h-12 object-contain rounded-lg shadow-lg border border-gold-400/40 bg-slate-950/80 p-0.5 hover:scale-105 transition-transform">
+    <div>
+        <h1 class="text-xl md:text-2xl font-bold font-serif tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-gold-100 via-gold-400 to-amber-500">
+            Knights of the Golden Spoon
+        </h1>
+        <p class="text-[10px] uppercase tracking-widest text-gold-500 font-semibold">Monsters & Memories Guild</p>
+    </div>
+</div>
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex space-x-1">
