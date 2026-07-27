@@ -1,1080 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knights of the Golden Spoon - Monsters & Memories Guild</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        gold: {
-                            50: '#fffbeb',
-                            100: '#fef3c7',
-                            200: '#fde68a',
-                            300: '#fcd34d',
-                            400: '#fbbf24',
-                            500: '#f59e0b',
-                            600: '#d97706',
-                            700: '#b45309',
-                            800: '#92400e',
-                            900: '#78350f',
-                            950: '#451a03',
-                        }
-                    },
-                    fontFamily: {
-                        serif: ['Georgia', 'serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Custom Style for Retro Scrollbars and Font accents -->
-    <style>
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #b45309;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #d97706;
-        }
-        .medieval-border {
-            border-image: linear-gradient(to bottom, #d97706, #451a03) 1;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guild Portal</title>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #121212; color: #e0e0e0; }
+    .card { background: #1e1e1e; padding: 20px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; }
+    button { background: #5865F2; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #4752C4; }
+    input, textarea, select { width: 100%; padding: 8px; margin: 8px 0; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box; }
+    .hidden { display: none; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; border: 1px solid #333; text-align: left; }
+    th { background-color: #2a2a2a; }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-gold-700 selection:text-white">
+<body>
 
-    <!-- Header Navigation -->
-    <header class="bg-slate-900 border-b border-gold-800/40 sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <!-- Logo/Title -->
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
-                    <div class="p-2.5 bg-gradient-to-br from-gold-600 to-amber-950 rounded-lg shadow-lg border border-gold-400/30">
-                        <!-- Custom Golden Spoon SVG Icon -->
-                        <svg class="w-8 h-8 text-gold-100" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2A4 4 0 0 0 8 6c0 3.31 4 9 4 9s4-5.69 4-9a4 4 0 0 0-4-4zm0 2c1.1 0 2 .9 2 2s-2 3.5-2 3.5S10 8 10 6s.9-2 2-2zm-1 11h2v7h-2z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-xl md:text-2xl font-bold font-serif tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-gold-100 via-gold-400 to-amber-500">
-                            Knights of the Golden Spoon
-                        </h1>
-                        <p class="text-[10px] uppercase tracking-widest text-gold-500 font-semibold">Monsters & Memories Guild</p>
-                    </div>
-                </div>
+  <h1>Guild Portal</h1>
 
-                <!-- Desktop Navigation -->
-                <nav class="hidden md:flex space-x-1">
-                    <button onclick="switchTab('home')" id="nav-home" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30">Home</button>
-                    <button onclick="switchTab('roster')" id="nav-roster" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Roster</button>
-                    <button onclick="switchTab('recruitment')" id="nav-recruitment" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30">Apply</button>
-                    <button onclick="switchTab('officer')" id="nav-officer" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30 flex items-center space-x-1">
-                        <span>Officers</span>
-                        <span id="nav-badge" class="hidden bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
-                    </button>
-                </nav>
+  <!-- Authentication Section -->
+  <div class="card">
+    <div id="auth-logged-out">
+      <p>Log in with Discord to access officer tools.</p>
+      <button onclick="loginWithDiscord()">Sign in with Discord</button>
+    </div>
+    <div id="auth-logged-in" class="hidden">
+      <p>Welcome, <span id="user-display-name"></span>!</p>
+      <button onclick="logout()">Sign Out</button>
+    </div>
+  </div>
 
-                <!-- Socials & Call to Action -->
-                <div class="hidden lg:flex items-center space-x-4">
-                    <a href="https://discord.gg/your-guild-link" id="discord-header-btn" target="_blank" class="flex items-center space-x-2 text-slate-300 hover:text-indigo-400 transition-colors text-sm bg-slate-800/80 px-3.5 py-2 rounded-lg border border-slate-700/50">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
-                        </svg>
-                        <span class="font-semibold text-xs tracking-wider">JOIN DISCORD</span>
-                    </a>
-                </div>
+  <!-- Guild Application Form -->
+  <div class="card">
+    <h2>Guild Application</h2>
+    <form id="app-form" onsubmit="submitApplication(event)">
+      <label>Character Name:</label>
+      <input type="text" id="char-name" required placeholder="In-game character name">
 
-                <!-- Mobile Menu Button -->
-                <div class="md:hidden">
-                    <button onclick="toggleMobileMenu()" class="text-slate-400 hover:text-gold-400 p-2 focus:outline-none">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
+      <label>Class / Archetype:</label>
+      <input type="text" id="char-class" required placeholder="e.g. Cleric, Warrior">
 
-        <!-- Mobile Dropdown Navigation -->
-        <div id="mobile-menu" class="hidden md:hidden bg-slate-900 border-b border-gold-900/50 px-4 py-3 space-y-2">
-            <button onclick="switchTab('home'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-gold-400 bg-slate-800">Home</button>
-            <button onclick="switchTab('roster'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Roster</button>
-            <button onclick="switchTab('recruitment'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Apply</button>
-            <button onclick="switchTab('officer'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Officer Center</button>
-            <a href="https://discord.gg/your-guild-link" id="discord-mobile-btn" target="_blank" class="block text-center px-3 py-2 rounded text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Join Discord</a>
-        </div>
-    </header>
+      <label>Level:</label>
+      <input type="number" id="char-level" required placeholder="Current level">
 
-    <!-- Global Success/Error Notifications Container -->
-    <div id="notification-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full"></div>
+      <label>MMO Experience / Bio:</label>
+      <textarea id="experience" rows="4" placeholder="Previous guilds, raid experience, goals"></textarea>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow">
+      <button type="submit">Submit Application</button>
+    </form>
+    <p id="app-status-msg"></p>
+  </div>
 
-        <!-- ================= HOME VIEW ================= -->
-        <section id="view-home" class="view-section py-8 md:py-12">
-            
-            <!-- Hero Banner -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-                <div class="relative rounded-2xl overflow-hidden border border-gold-800/40 shadow-2xl bg-slate-900/40">
-                    <!-- Pure CSS/Gradient Background to ensure stability without hosting dependencies -->
-                    <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/80 to-transparent z-10"></div>
-                    <div class="absolute right-0 top-0 w-1/2 h-full opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold-500 via-slate-950 to-slate-950"></div>
-                    
-                    <div class="relative z-20 px-6 py-16 md:py-24 max-w-2xl">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gold-950 border border-gold-700/50 text-gold-400 mb-4 tracking-wider uppercase">
-                            Est. 1996 - Sierra's The Realm
-                        </span>
-                        <h2 class="text-4xl md:text-5xl font-black font-serif tracking-tight text-white mb-4 leading-tight">
-                            For Justice, Honor, and the Glory of the Golden Spoon!!
-                        </h2>
-                        <p class="text-slate-300 text-lg mb-8 leading-relaxed">
-                            Formed in the dawn of online worlds and reborn in <span class="text-gold-400 font-semibold">Monsters & Memories</span>. We are a family bound by legacy, epic adventures, and a touch of golden whimsy.
-                        </p>
-                        <div class="flex flex-wrap gap-4">
-                            <button onclick="switchTab('recruitment')" class="px-6 py-3 bg-gradient-to-r from-gold-600 to-amber-700 hover:from-gold-500 hover:to-amber-600 text-slate-950 font-bold rounded-lg shadow-lg shadow-gold-900/20 hover:shadow-gold-800/30 transition-all text-sm uppercase tracking-wider">
-                                Recite the Oath
-                            </button>
-                            <button onclick="switchTab('roster')" class="px-6 py-3 bg-slate-800/80 hover:bg-slate-700 text-slate-100 hover:text-white font-semibold rounded-lg border border-slate-700 hover:border-gold-800 transition-all text-sm uppercase tracking-wider">
-                                Behold the Roster
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- Officer Command Center (Visible when logged in) -->
+  <div id="officer-center" class="card hidden">
+    <h2>Officer Command Center</h2>
+    <h3>Pending Applications</h3>
+    <button onclick="fetchApplications()">Refresh Applications</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Character</th>
+          <th>Class</th>
+          <th>Level</th>
+          <th>Experience</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="applications-list">
+        <tr><td colspan="6">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-            <!-- Dashboard Grid -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
-                    <!-- LEFT COLUMN: Guild Information & The Oath -->
-                    <div class="lg:col-span-2 space-y-8">
-                        
-                        <!-- The Oath of the Golden Spoon -->
-                        <div class="bg-gradient-to-b from-slate-900 to-slate-950 p-6 md:p-8 rounded-xl border border-gold-900/50 shadow-xl relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                                <svg class="w-32 h-32 text-gold-500" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2A4 4 0 0 0 8 6c0 3.31 4 9 4 9s4-5.69 4-9a4 4 0 0 0-4-4zm0 2c1.1 0 2 .9 2 2s-2 3.5-2 3.5S10 8 10 6s.9-2 2-2zm-1 11h2v7h-2z"/>
-                                </svg>
-                            </div>
-                            
-                            <h3 class="text-2xl font-bold font-serif text-gold-400 mb-4 border-b border-gold-900/40 pb-2">The Oath of the Golden Spoon</h3>
-                            <div class="prose prose-invert max-w-none text-slate-300 space-y-4">
-                                <p class="italic font-serif text-lg text-slate-200 border-l-4 border-gold-600 pl-4 py-1">
-                                    "We swear to hold aloft the Spoon in times of shadow. We shield the weary, feed the crafting forges, and face down the deep horrors of this realm. Together as one family, we stand."
-                                </p>
-                                <p>
-                                    Our fellowship was forged in the ancient, historical era of Sierra's <span class="text-gold-400 font-semibold">The Realm Online (1996)</span>. In those days, we learned that community, honor, and mutual aid were the true treasures of any world. 
-                                </p>
-                                <p>
-                                    Now, as the world of <span class="text-gold-400">Monsters & Memories</span> wakes up, we return. Our goal is not just conquest, but the nurturing of a home for players who value genuine companionship, steady PvE progress, master craftsmanship, and unwavering chivalry. We do not tolerate toxic pursuits—only the legendary justice of the Spoon.
-                                </p>
-                            </div>
-                        </div>
+  <script>
+    // Injected Credentials
+    const SUPABASE_URL = "https://zzotvstvmnlmfrulxhvl.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable__o4vTB20JE2br9c_F3p8rQ_ez98q06n";
+    const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531232336920711239/Wt-LiJ64wHumDL34ntEL0IEe2PqV5mBVYeN6GLZIvrDrbyi7kd3zEU8zdi7lRY_J6IGS";
 
-                        <!-- Guild News & Campaigns -->
-                        <div class="bg-slate-900/80 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-2xl font-bold font-serif text-slate-100 flex items-center space-x-2">
-                                    <span class="w-2 h-6 bg-gold-600 rounded-full"></span>
-                                    <span>Guild News & Campaigns</span>
-                                </h3>
-                                <span class="text-xs text-gold-400 uppercase tracking-widest font-semibold bg-gold-950 px-2 py-1 rounded border border-gold-900/60">Campaign Updates</span>
-                            </div>
-                            
-                            <!-- News Stream -->
-                            <div class="space-y-6">
-                                <!-- News 1 -->
-                                <div class="border-b border-slate-800/80 pb-6 last:border-0 last:pb-0">
-                                    <div class="flex items-center space-x-2 text-xs text-slate-400 mb-2">
-                                        <span class="font-semibold text-gold-500">OFFICER BULLETIN</span>
-                                        <span>•</span>
-                                        <span>June 24, 2026</span>
-                                    </div>
-                                    <h4 class="text-lg font-bold text-slate-100 hover:text-gold-400 transition-colors cursor-pointer">Preparing for the Next Test Phase</h4>
-                                    <p class="text-slate-400 text-sm mt-2 leading-relaxed">
-                                        As the development of Monsters & Memories proceeds, we are mobilizing our crafters and gathering materials. Our main focus in the upcoming testing build is establishing key material routes and securing high-tier armor sets for our vanguard fighters. Make sure to update your main play schedules!
-                                    </p>
-                                </div>
-                                <!-- News 2 -->
-                                <div class="border-b border-slate-800/80 pb-6 last:border-0 last:pb-0">
-                                    <div class="flex items-center space-x-2 text-xs text-slate-400 mb-2">
-                                        <span class="font-semibold text-gold-500">EVENT REVIEW</span>
-                                        <span>•</span>
-                                        <span>May 12, 2026</span>
-                                    </div>
-                                    <h4 class="text-lg font-bold text-slate-100 hover:text-gold-400 transition-colors cursor-pointer">The Great Dungeon Excursion Success</h4>
-                                    <p class="text-slate-400 text-sm mt-2 leading-relaxed">
-                                        A brilliant showing by the vanguard squad. We successfully cleared the deeper crypts, demonstrating classic coordination and keeping our squishy Wizards safe from aggro. A special commendation goes to our Clerics who kept the line stabilized under extreme stress!
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                    </div>
+    // Initialize Auth State
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      updateAuthUI(session);
 
-                    <!-- RIGHT COLUMN: Side widgets & status -->
-                    <div class="space-y-8">
-                        
-                        <!-- Guild Vitals Info -->
-                        <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center space-x-2">
-                                <svg class="w-5 h-5 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span>Guild Vitals</span>
-                            </h3>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center py-2 border-b border-slate-800">
-                                    <span class="text-slate-400 text-sm">Guild Focus</span>
-                                    <span class="text-gold-400 text-sm font-semibold">PvE, Crafting, Community</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-slate-800">
-                                    <span class="text-slate-400 text-sm">Playtime</span>
-                                    <span class="text-slate-200 text-sm font-semibold">US EST Evenings</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-slate-800">
-                                    <span class="text-slate-400 text-sm">Membership</span>
-                                    <span class="text-emerald-400 text-sm font-semibold">Open Recruitment</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-slate-400 text-sm">Historic Legacy</span>
-                                    <span class="text-slate-200 text-sm font-semibold">Sierra's The Realm</span>
-                                </div>
-                            </div>
-                        </div>
+      supabaseClient.auth.onAuthStateChange((_event, session) => {
+        updateAuthUI(session);
+      });
+    });
 
-                        <!-- Recruitment Needs Widget -->
-                        <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
-                                <span class="flex items-center space-x-2">
-                                    <svg class="w-5 h-5 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                                    <span>Recruitment Priorities</span>
-                                </span>
-                            </h3>
-                            
-                            <div id="recruitment-needs-list" class="space-y-3">
-                                <!-- Generated Dynamically -->
-                            </div>
-                            
-                            <button onclick="switchTab('recruitment')" class="w-full mt-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-gold-400 hover:text-gold-300 font-semibold rounded text-sm transition-colors border border-slate-700/80">
-                                Apply to the Guild
-                            </button>
-                        </div>
+    function updateAuthUI(session) {
+      if (session) {
+        document.getElementById('auth-logged-out').classList.add('hidden');
+        document.getElementById('auth-logged-in').classList.remove('hidden');
+        document.getElementById('officer-center').classList.remove('hidden');
+        document.getElementById('user-display-name').innerText = session.user.user_metadata.full_name || session.user.email;
+        fetchApplications();
+      } else {
+        document.getElementById('auth-logged-out').classList.remove('hidden');
+        document.getElementById('auth-logged-in').classList.add('hidden');
+        document.getElementById('officer-center').classList.add('hidden');
+      }
+    }
 
-                        <!-- Calendar Module -->
-                        <div class="bg-slate-900/90 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-lg font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
-                                <span class="flex items-center space-x-2">
-                                    <svg class="w-5 h-5 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                    <span>Upcoming Expeditions</span>
-                                </span>
-                            </h3>
-                            <div id="events-list" class="space-y-3">
-                                <!-- Generated Dynamically -->
-                            </div>
-                        </div>
+    async function loginWithDiscord() {
+      await supabaseClient.auth.signInWithOAuth({
+        provider: 'discord',
+        options: { redirectTo: window.location.href }
+      });
+    }
 
-                    </div>
+    async function logout() {
+      await supabaseClient.auth.signOut();
+    }
 
-                </div>
-            </div>
+    // Submit Application & Trigger Discord Webhook
+    async function submitApplication(e) {
+      e.preventDefault();
+      const statusMsg = document.getElementById('app-status-msg');
+      statusMsg.innerText = "Submitting...";
 
-        </section>
+      const charName = document.getElementById('char-name').value;
+      const charClass = document.getElementById('char-class').value;
+      const charLevel = parseInt(document.getElementById('char-level').value);
+      const experience = document.getElementById('experience').value;
 
+      // 1. Insert into Supabase DB
+      const { error } = await supabaseClient
+        .from('applications')
+        .insert([{ character_name: charName, character_class: charClass, character_level: charLevel, experience: experience }]);
 
-        <!-- ================= ROSTER VIEW ================= -->
-        <section id="view-roster" class="view-section py-8 md:py-12 hidden">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <!-- Page Title -->
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold font-serif text-slate-100">The Guild Ledger</h2>
-                    <p class="text-slate-400 mt-1">Our sworn shield-brothers, master crafters, and veterans from ancient days.</p>
-                </div>
+      if (error) {
+        statusMsg.innerText = "Error submitting application: " + error.message;
+        return;
+      }
 
-                <!-- Filters & Search Bar -->
-                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex-1 max-w-md relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        </span>
-                        <input type="text" id="roster-search" oninput="filterRoster()" placeholder="Search character names..." class="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-gold-600 text-slate-200">
-                    </div>
-                    
-                    <div class="flex flex-wrap gap-3">
-                        <select id="roster-class-filter" onchange="filterRoster()" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-300 focus:outline-none focus:border-gold-600">
-                            <option value="All">All Classes</option>
-                            <!-- Dynamically populated -->
-                        </select>
-                        <select id="roster-rank-filter" onchange="filterRoster()" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-300 focus:outline-none focus:border-gold-600">
-                            <option value="All">All Ranks</option>
-                            <option value="Grandmaster">Grandmaster</option>
-                            <option value="Officer">Officer</option>
-                            <option value="Spoon Knight">Spoon Knight</option>
-                            <option value="Initiate">Initiate</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Roster Grid -->
-                <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Dynamic Member Cards Go Here -->
-                </div>
-
-                <!-- Empty State -->
-                <div id="roster-empty-state" class="hidden text-center py-16 bg-slate-900/50 rounded-xl border border-slate-850">
-                    <p class="text-slate-400">No companions matching your filter criteria were found in our records.</p>
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- ================= RECRUITMENT VIEW ================= -->
-        <section id="view-recruitment" class="view-section py-8 md:py-12 hidden">
-            <div class="max-w-3xl mx-auto px-4 sm:px-6">
-                
-                <!-- Section Intro -->
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl md:text-4xl font-bold font-serif text-slate-100">The Oath of the Golden Spoon</h2>
-                    <p class="text-slate-400 mt-2 max-w-xl mx-auto">
-                        We seek honorable souls who align with our vision of fair play, master crafts, and warm companionable excursions.
-                    </p>
-                    <p class="text-gold-500 font-semibold font-serif text-sm mt-3 tracking-wider italic">
-                        "For Justice, Honor, and the Glory of the Golden Spoon!!"
-                    </p>
-                </div>
-
-                <!-- Application Form -->
-                <div class="bg-slate-900 p-6 md:p-8 rounded-xl border border-gold-900/40 shadow-2xl">
-                    <form id="recruitment-form" onsubmit="handleRecruitmentSubmit(event)" class="space-y-6">
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <!-- Character Name -->
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Character Name *</label>
-                                <input type="text" id="app-char-name" required placeholder="E.g., Alistair" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
-                            </div>
-                            <!-- Desired Class -->
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Primary Class *</label>
-                                <select id="app-class" required class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
-                                    <option value="" disabled selected>Choose your calling...</option>
-                                    <!-- Populated dynamically with actual classes -->
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <!-- Approximate Level -->
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Current/Intended Level</label>
-                                <input type="number" id="app-level" min="1" max="100" placeholder="1" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
-                            </div>
-                            <!-- Primary Archetype Focus -->
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Primary Specialization Focus</label>
-                                <select id="app-focus" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
-                                    <option value="PvE Dungeons">PvE Dungeons / Raids</option>
-                                    <option value="Crafting/Economy">Master Crafting & Economy</option>
-                                    <option value="Casual Adventurer">Casual Community & Lore</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Discord Tag -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Discord Username *</label>
-                            <input type="text" id="app-discord" required placeholder="E.g., spoon_knight#1234" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
-                        </div>
-
-                        <!-- Bio / Motivation -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Tell us about your history in online RPGs</label>
-                            <textarea id="app-bio" rows="4" placeholder="Share your experience (especially if you remember classic environments like The Realm or other legendary virtual worlds)..." class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors"></textarea>
-                        </div>
-
-                        <!-- Vow / Affirmation Agreement -->
-                        <div class="bg-slate-950 p-4 rounded-lg border border-gold-900/30">
-                            <div class="flex items-start">
-                                <div class="flex items-center h-5">
-                                    <input id="vow-checkbox" type="checkbox" required class="h-4 w-4 text-gold-600 focus:ring-gold-500 border-slate-800 rounded bg-slate-900">
-                                </div>
-                                <div class="ml-3 text-sm">
-                                    <label for="vow-checkbox" class="font-medium text-slate-300">I solemnly pledge to honor the guild mandate, help my brothers, maintain high honor, and hold to our ancient creed:</label>
-                                    <p class="text-gold-400 font-serif font-bold text-xs mt-1">"For Justice, Honor, and the Glory of the Golden Spoon!!"</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div>
-                            <button type="submit" class="w-full py-3 bg-gradient-to-r from-gold-600 to-amber-700 hover:from-gold-500 hover:to-amber-600 text-slate-950 font-bold rounded-lg shadow-lg shadow-gold-900/20 hover:shadow-gold-800/30 transition-all uppercase tracking-wider text-sm">
-                                Submit Pledge Application
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- ================= OFFICER COMMAND CENTER ================= -->
-        <section id="view-officer" class="view-section py-8 md:py-12 hidden">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <!-- Page Title -->
-                <div class="mb-8 border-b border-slate-800 pb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-3xl font-bold font-serif text-slate-100">Officer Command Center</h2>
-                        <p class="text-slate-400 mt-1">Manage recruiting applications, create new expeditions, and update class priorities.</p>
-                    </div>
-                    <!-- System Reset button -->
-                    <button onclick="resetDefaults()" class="text-xs text-slate-500 hover:text-red-400 border border-slate-800 hover:border-red-900/50 px-3 py-1.5 rounded transition-all">
-                        Reset System Defaults
-                    </button>
-                </div>
-
-                <!-- Discord Webhook Box -->
-                <div class="mb-8 bg-slate-900 p-6 rounded-xl border border-slate-800">
-                    <h3 class="text-lg font-bold font-serif text-slate-100 mb-2 flex items-center space-x-2">
-                        <!-- Discord SVG icon -->
-                        <svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-                        <span>Discord Integration Link (Recruitment Webhook)</span>
-                    </h3>
-                    <p class="text-sm text-slate-400 mb-4">
-                        If configured, prospective members submitting your Oath form will generate detailed alerts instantly in your Discord. Create a webhook in Discord (Channel Settings &gt; Integrations &gt; Webhooks) and paste it below.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="password" id="webhook-url-input" placeholder="https://discord.com/api/webhooks/..." class="flex-grow px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                        <button onclick="saveWebhookSettings()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg transition-colors">
-                            Save Configuration
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Three Columns: Setup Priorities, Pending Applications, Add Events -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
-                    <!-- COLUMN 1: Pending Applications -->
-                    <div class="lg:col-span-2 space-y-6">
-                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
-                                <span>Pledges Awaiting Review</span>
-                                <span id="app-count-badge" class="bg-gold-600 text-slate-950 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
-                            </h3>
-                            <div id="pending-applications-list" class="space-y-4">
-                                <!-- Dynamic Pending Applications Go Here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- COLUMN 2: Expeditions & Priorities Manager -->
-                    <div class="space-y-8">
-                        
-                        <!-- Create Expedition Event -->
-                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Schedule New Expedition</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Event Title</label>
-                                    <input type="text" id="new-event-title" placeholder="E.g., Crypts Dungeon Run" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date</label>
-                                        <input type="text" id="new-event-date" placeholder="July 25" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Time (EST)</label>
-                                        <input type="text" id="new-event-time" placeholder="8:00 PM" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Event Objective</label>
-                                    <input type="text" id="new-event-desc" placeholder="E.g., Helping recruits get gear." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                                </div>
-                                <button onclick="addNewEvent()" class="w-full py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
-                                    Publish Expedition
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Class Priority Configuration -->
-                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                            <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Set Class Priorities</h3>
-                            <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2" id="officer-priority-list">
-                                <!-- Dynamic Priorities list with +/- buttons -->
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-slate-950 border-t border-slate-900/60 py-8 text-center text-slate-500 text-xs">
-        <div class="max-w-7xl mx-auto px-4 space-y-4">
-            <div class="flex justify-center space-x-6">
-                <a href="https://discord.gg/your-guild-link" id="discord-footer-btn" target="_blank" class="hover:text-indigo-400 flex items-center space-x-1 transition-colors">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-                    <span>Discord Community</span>
-                </a>
-            </div>
-            <p>© 2026 Knights of the Golden Spoon. Handcrafted for Monsters & Memories. All rights reserved.</p>
-            <p class="text-slate-600 text-[10px]">
-                Disclaimer: Knights of the Golden Spoon is an independent player organization in the virtual world of Monsters & Memories.
-            </p>
-        </div>
-    </footer>
-
-    <!-- JS Logic and Storage Integration -->
-    <script>
-        // Official 18 playable classes for Monsters & Memories
-        const MM_CLASSES = [
-            "Bard",
-            "Beastmaster",
-            "Cleric",
-            "Druid",
-            "Elementalist",
-            "Enchanter",
-            "Fighter",
-            "Inquisitor",
-            "Magician",
-            "Monk",
-            "Necromancer",
-            "Paladin",
-            "Ranger",
-            "Rogue",
-            "Shadow Knight",
-            "Shaman",
-            "Spellblade",
-            "Wizard"
-        ];
-
-        // Default Data Set
-        const DEFAULT_ROSTER = [
-            { id: "1", name: "Aethelred", class: "Paladin", level: 25, rank: "Grandmaster", focus: "PvE Dungeons", discord: "aeth#1996" },
-            { id: "2", name: "Morwenna", class: "Enchanter", level: 22, rank: "Officer", focus: "PvE Dungeons", discord: "morw_ench" },
-            { id: "3", name: "Gideon", class: "Fighter", level: 18, rank: "Spoon Knight", focus: "PvE Dungeons", discord: "gideon_f" },
-            { id: "4", name: "Bron", class: "Cleric", level: 20, rank: "Spoon Knight", focus: "PvE Dungeons", discord: "bron_heals" },
-            { id: "5", name: "Sela", class: "Spellblade", level: 15, rank: "Initiate", focus: "Crafting/Economy", discord: "sela_crafts" },
-            { id: "6", name: "Varis", class: "Ranger", level: 14, rank: "Initiate", focus: "Casual Adventurer", discord: "varis_ranger" }
-        ];
-
-        const DEFAULT_PRIORITIES = {
-            "Cleric": "High",
-            "Enchanter": "High",
-            "Shadow Knight": "Medium",
-            "Spellblade": "Medium",
-            "Inquisitor": "Low",
-            "Wizard": "Low"
-        };
-
-        const DEFAULT_EVENTS = [
-            { id: "e1", title: "Crypts Cryptic Excursion", date: "July 24", time: "8:00 PM", desc: "Armor material gathering and level clearing." },
-            { id: "e2", title: "Guild Council Gathering", date: "July 29", time: "9:00 PM", desc: "Briefing for ancient members." }
-        ];
-
-        const DEFAULT_APPLICATIONS = [
-            {
-                id: "mock1",
-                charName: "Oakhaven",
-                class: "Beastmaster",
-                level: 12,
-                focus: "Casual Adventurer",
-                discord: "oakhaven_mmo",
-                bio: "Remembered your name from Sierra's The Realm Online back in late 90s! Really excited to join up with a group of mature RPG veterans.",
-                timestamp: Date.now()
-            }
-        ];
-
-        // State variables initialized from Local Storage
-        let roster = JSON.parse(localStorage.getItem('gms_roster')) || DEFAULT_ROSTER;
-        let priorities = JSON.parse(localStorage.getItem('gms_priorities')) || DEFAULT_PRIORITIES;
-        let events = JSON.parse(localStorage.getItem('gms_events')) || DEFAULT_EVENTS;
-        let applications = JSON.parse(localStorage.getItem('gms_applications')) || DEFAULT_APPLICATIONS;
-        let discordWebhook = localStorage.getItem('gms_webhook') || "";
-
-        // Application initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            populateClassSelects();
-            renderRoster();
-            renderRecruitmentNeeds();
-            renderEvents();
-            renderPendingApplications();
-            renderOfficerPriorities();
-            updateBadges();
-
-            // Setup input value for Webhook if exists
-            if (discordWebhook) {
-                document.getElementById('webhook-url-input').value = discordWebhook;
-            }
+      // 2. Send Discord Webhook Notification
+      try {
+        await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            embeds: [{
+              title: "⚔️ New Guild Application Received!",
+              color: 5814786,
+              fields: [
+                { name: "Character", value: charName, inline: true },
+                { name: "Class", value: charClass, inline: true },
+                { name: "Level", value: String(charLevel), inline: true },
+                { name: "Experience / Bio", value: experience || "N/A" }
+              ],
+              footer: { text: "KOTGS Website Notification" }
+            }]
+          })
         });
+      } catch (err) {
+        console.error("Webhook error:", err);
+      }
 
-        // Populate dropdown selectors dynamically
-        function populateClassSelects() {
-            const rosterFilterSelect = document.getElementById('roster-class-filter');
-            const appClassSelect = document.getElementById('app-class');
+      statusMsg.innerText = "Application submitted successfully!";
+      document.getElementById('app-form').reset();
+    }
 
-            // Clear defaults except placeholder
-            rosterFilterSelect.innerHTML = `<option value="All">All Classes</option>`;
-            appClassSelect.innerHTML = `<option value="" disabled selected>Choose your calling...</option>`;
+    // Fetch Pending Applications for Officers
+    async function fetchApplications() {
+      const tbody = document.getElementById('applications-list');
+      tbody.innerHTML = "<tr><td colspan='6'>Fetching...</td></tr>";
 
-            MM_CLASSES.forEach(cls => {
-                // To Roster filter
-                const optRoster = document.createElement('option');
-                optRoster.value = cls;
-                optRoster.textContent = cls;
-                rosterFilterSelect.appendChild(optRoster);
+      const { data, error } = await supabaseClient
+        .from('applications')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-                // To Application dropdown
-                const optApp = document.createElement('option');
-                optApp.value = cls;
-                optApp.textContent = cls;
-                appClassSelect.appendChild(optApp);
-            });
-        }
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan='6'>Error loading applications: ${error.message}</td></tr>`;
+        return;
+      }
 
-        // Display Alert Toast
-        function showNotification(msg, type = "success") {
-            const container = document.getElementById('notification-container');
-            const toast = document.createElement('div');
-            toast.className = `p-4 rounded-xl border shadow-lg transition-all duration-300 transform translate-y-2 opacity-0 text-sm font-medium ${
-                type === "success" 
-                    ? "bg-slate-900 border-gold-600/50 text-gold-200" 
-                    : "bg-slate-900 border-red-500/50 text-red-200"
-            }`;
-            toast.textContent = msg;
-            container.appendChild(toast);
+      if (!data || data.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='6'>No applications found.</td></tr>";
+        return;
+      }
 
-            // Animate entry
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
+      tbody.innerHTML = data.map(app => `
+        <tr>
+          <td>${app.character_name}</td>
+          <td>${app.character_class}</td>
+          <td>${app.character_level}</td>
+          <td>${app.experience || ''}</td>
+          <td><strong>${app.status}</strong></td>
+          <td>
+            ${app.status === 'pending' ? `
+              <button onclick="updateAppStatus('${app.id}', 'approved')">Approve</button>
+              <button onclick="updateAppStatus('${app.id}', 'rejected')">Reject</button>
+            ` : 'Done'}
+          </td>
+        </tr>
+      `).join('');
+    }
 
-            // Exit animation & Removal
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
-        }
+    async function updateAppStatus(id, newStatus) {
+      const { error } = await supabaseClient
+        .from('applications')
+        .update({ status: newStatus })
+        .eq('id', id);
 
-        // Switch main views
-        function switchTab(tabId) {
-            // Hide all sections
-            document.querySelectorAll('.view-section').forEach(section => {
-                section.classList.add('hidden');
-            });
-            // Show active section
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
-
-            // Update nav item highlights
-            document.querySelectorAll('header nav button').forEach(btn => {
-                btn.className = "px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30";
-            });
-            const activeBtn = document.getElementById(`nav-${tabId}`);
-            if (activeBtn) {
-                activeBtn.className = "px-4 py-2 rounded-md text-sm font-medium transition-colors text-gold-400 bg-slate-800/60 border border-gold-900/30";
-            }
-        }
-
-        // Toggle mobile menu display
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        }
-
-        // RENDER: Front-end recruitment priority items
-        function renderRecruitmentNeeds() {
-            const container = document.getElementById('recruitment-needs-list');
-            container.innerHTML = "";
-
-            // Sort so high is at top
-            const sorted = Object.entries(priorities).sort((a, b) => {
-                const map = { "High": 3, "Medium": 2, "Low": 1 };
-                return map[b[1]] - map[a[1]];
-            });
-
-            sorted.forEach(([cls, prio]) => {
-                let badgeClass = "bg-red-950/80 border-red-800/50 text-red-400";
-                if (prio === "Medium") badgeClass = "bg-amber-950/80 border-amber-800/50 text-amber-400";
-                if (prio === "Low") badgeClass = "bg-slate-900 border-slate-800 text-slate-400";
-
-                const row = document.createElement('div');
-                row.className = "flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-800";
-                row.innerHTML = `
-                    <span class="text-sm font-medium text-slate-200">${cls}</span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass}">${prio.toUpperCase()}</span>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        // RENDER: Events Calendar
-        function renderEvents() {
-            const container = document.getElementById('events-list');
-            container.innerHTML = "";
-
-            if (events.length === 0) {
-                container.innerHTML = `<p class="text-slate-500 text-sm italic">Peace on the horizon. Check back soon.</p>`;
-                return;
-            }
-
-            events.forEach(ev => {
-                const card = document.createElement('div');
-                card.className = "p-3 bg-slate-950 rounded-lg border border-slate-850 hover:border-gold-900/50 transition-colors";
-                card.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-gold-500 uppercase tracking-wider">${ev.date} @ ${ev.time}</span>
-                    </div>
-                    <h4 class="text-sm font-bold text-slate-200 mt-1">${ev.title}</h4>
-                    <p class="text-slate-400 text-[11px] mt-1">${ev.desc}</p>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // RENDER: Main Roster view
-        function renderRoster() {
-            const container = document.getElementById('roster-grid');
-            container.innerHTML = "";
-
-            const searchVal = document.getElementById('roster-search').value.toLowerCase();
-            const classFilter = document.getElementById('roster-class-filter').value;
-            const rankFilter = document.getElementById('roster-rank-filter').value;
-
-            const filtered = roster.filter(mem => {
-                const matchSearch = mem.name.toLowerCase().includes(searchVal);
-                const matchClass = classFilter === "All" || mem.class === classFilter;
-                const matchRank = rankFilter === "All" || mem.rank === rankFilter;
-                return matchSearch && matchClass && matchRank;
-            });
-
-            if (filtered.length === 0) {
-                document.getElementById('roster-empty-state').classList.remove('hidden');
-                return;
-            } else {
-                document.getElementById('roster-empty-state').classList.add('hidden');
-            }
-
-            filtered.forEach(m => {
-                let rankStyle = "text-slate-400 border-slate-800 bg-slate-950";
-                if (m.rank === "Grandmaster") rankStyle = "text-gold-400 border-gold-800/40 bg-gold-950/30";
-                if (m.rank === "Officer") rankStyle = "text-amber-500 border-amber-900/40 bg-amber-950/30";
-
-                const card = document.createElement('div');
-                card.className = "bg-slate-900 p-5 rounded-xl border border-slate-850 flex flex-col justify-between hover:border-gold-900/30 transition-all";
-                card.innerHTML = `
-                    <div>
-                        <div class="flex items-start justify-between">
-                            <h4 class="text-lg font-bold text-slate-100 font-serif">${m.name}</h4>
-                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded border ${rankStyle}">${m.rank}</span>
-                        </div>
-                        <div class="mt-4 space-y-1 text-xs">
-                            <div class="flex justify-between text-slate-400">
-                                <span>Class:</span>
-                                <span class="text-slate-200 font-medium">${m.class}</span>
-                            </div>
-                            <div class="flex justify-between text-slate-400">
-                                <span>Focus:</span>
-                                <span class="text-slate-200 font-medium">${m.focus}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-[10px]">
-                        <span class="text-slate-500 font-mono">${m.discord}</span>
-                        <span class="text-gold-500 font-semibold font-serif">LVL ${m.level || '??'}</span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function filterRoster() {
-            renderRoster();
-        }
-
-        // ACTION: Manage and send recruitment form
-        async function handleRecruitmentSubmit(event) {
-            event.preventDefault();
-
-            const nameInput = document.getElementById('app-char-name');
-            const classInput = document.getElementById('app-class');
-            const levelInput = document.getElementById('app-level');
-            const focusInput = document.getElementById('app-focus');
-            const discordInput = document.getElementById('app-discord');
-            const bioInput = document.getElementById('app-bio');
-
-            const appData = {
-                id: 'app_' + Date.now(),
-                charName: nameInput.value.trim(),
-                class: classInput.value,
-                level: parseInt(levelInput.value) || 1,
-                focus: focusInput.value,
-                discord: discordInput.value.trim(),
-                bio: bioInput.value.trim() || "No historic stories recorded.",
-                timestamp: Date.now()
-            };
-
-            // Store internally
-            applications.push(appData);
-            localStorage.setItem('gms_applications', JSON.stringify(applications));
-
-            // Notify Locally
-            showNotification(`Application submitted! Let an officer review it in the Command Center.`);
-
-            // Send to Discord Webhook if setup
-            if (discordWebhook && discordWebhook.startsWith('http')) {
-                try {
-                    const embedPayload = {
-                        embeds: [{
-                            title: "🚨 New Recruiter Pledge Submitted! 🚨",
-                            color: 15301131, // Gold color code
-                            description: `The sacred vow has been sworn by **${appData.charName}** to the Knights of the Golden Spoon.`,
-                            fields: [
-                                { name: "Character Class", value: appData.class, inline: true },
-                                { name: "Level", value: appData.level.toString(), inline: true },
-                                { name: "Play Focus", value: appData.focus, inline: true },
-                                { name: "Discord Account", value: appData.discord, inline: false },
-                                { name: "Backstory / Chronicle", value: appData.bio }
-                            ],
-                            footer: {
-                                text: "For Justice, Honor, and the Glory of the Golden Spoon!!"
-                            },
-                            timestamp: new Date().toISOString()
-                        }]
-                    };
-
-                    await fetch(discordWebhook, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(embedPayload)
-                    });
-                    showNotification("Application has been beamed directly to your guild Discord!");
-                } catch (e) {
-                    showNotification("Local save complete, but Discord integration ran into a pipeline error.", "error");
-                }
-            }
-
-            // Reset inputs
-            document.getElementById('recruitment-form').reset();
-            updateBadges();
-            renderPendingApplications();
-            switchTab('home');
-        }
-
-        // RENDER: Applications list inside Officers tab
-        function renderPendingApplications() {
-            const container = document.getElementById('pending-applications-list');
-            container.innerHTML = "";
-
-            if (applications.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-slate-500">
-                        <p class="text-sm italic">All applications have been fully processed. The guild welcomes your vigilance!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            applications.forEach((app, index) => {
-                const dateStr = new Date(app.timestamp).toLocaleDateString();
-                const card = document.createElement('div');
-                card.className = "bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4";
-                card.innerHTML = `
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-850 pb-3 gap-2">
-                        <div>
-                            <span class="text-xs text-gold-500 font-semibold uppercase tracking-wider">Applied ${dateStr}</span>
-                            <h4 class="text-lg font-bold text-slate-100">${app.charName}</h4>
-                        </div>
-                        <div class="flex flex-wrap gap-2 text-[10px] font-bold">
-                            <span class="bg-indigo-950 border border-indigo-900 text-indigo-400 px-2 py-0.5 rounded">${app.class}</span>
-                            <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2 py-0.5 rounded">LVL ${app.level}</span>
-                            <span class="bg-amber-950 border border-amber-900 text-amber-400 px-2 py-0.5 rounded">${app.focus}</span>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1">Applicant's Chronicle</span>
-                        <p class="text-slate-300 text-sm whitespace-pre-line leading-relaxed italic bg-slate-900 p-3 rounded border border-slate-850">${app.bio}</p>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-2 gap-4">
-                        <span class="text-xs text-slate-400 font-mono">Discord Contact: <span class="text-slate-200 font-bold">${app.discord}</span></span>
-                        <div class="flex gap-2">
-                            <button onclick="processApp('${app.id}', 'approve')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded transition-all uppercase tracking-wider">
-                                Approve
-                            </button>
-                            <button onclick="processApp('${app.id}', 'reject')" class="px-4 py-1.5 bg-red-900/50 hover:bg-red-800/80 text-red-200 border border-red-800/40 text-xs rounded transition-all uppercase tracking-wider">
-                                Reject
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // ACTION: Process pending apps
-        function processApp(appId, decision) {
-            const targetApp = applications.find(a => a.id === appId);
-            if (!targetApp) return;
-
-            if (decision === "approve") {
-                // Add to roster state
-                const newMember = {
-                    id: 'm_' + Date.now(),
-                    name: targetApp.charName,
-                    class: targetApp.class,
-                    level: targetApp.level,
-                    rank: "Initiate",
-                    focus: targetApp.focus,
-                    discord: targetApp.discord
-                };
-                roster.push(newMember);
-                localStorage.setItem('gms_roster', JSON.stringify(roster));
-                showNotification(`${targetApp.charName} approved and added to the guild roster ledger!`);
-            } else {
-                showNotification(`Application of ${targetApp.charName} was quietly deleted.`, "error");
-            }
-
-            // Remove app and update views
-            applications = applications.filter(a => a.id !== appId);
-            localStorage.setItem('gms_applications', JSON.stringify(applications));
-
-            updateBadges();
-            renderPendingApplications();
-            renderRoster();
-        }
-
-        // RENDER & ACTION: Priorities inside Officers view
-        function renderOfficerPriorities() {
-            const container = document.getElementById('officer-priority-list');
-            container.innerHTML = "";
-
-            MM_CLASSES.forEach(cls => {
-                const val = priorities[cls] || "Low";
-                const row = document.createElement('div');
-                row.className = "flex items-center justify-between p-2 bg-slate-950 rounded border border-slate-900 text-sm";
-                row.innerHTML = `
-                    <span class="text-slate-300">${cls}</span>
-                    <div class="flex items-center space-x-2">
-                        <select onchange="updateClassPriority('${cls}', this.value)" class="bg-slate-900 border border-slate-800 text-[11px] rounded px-2 py-1 text-slate-300">
-                            <option value="High" ${val === 'High' ? 'selected' : ''}>High</option>
-                            <option value="Medium" ${val === 'Medium' ? 'selected' : ''}>Medium</option>
-                            <option value="Low" ${val === 'Low' ? 'selected' : ''}>Low</option>
-                        </select>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        function updateClassPriority(className, priorityLevel) {
-            priorities[className] = priorityLevel;
-            localStorage.setItem('gms_priorities', JSON.stringify(priorities));
-            renderRecruitmentNeeds();
-            showNotification(`Updated recruitment priority for ${className} to ${priorityLevel}.`);
-        }
-
-        // ACTION: Add custom Expedition Event
-        function addNewEvent() {
-            const titleIn = document.getElementById('new-event-title');
-            const dateIn = document.getElementById('new-event-date');
-            const timeIn = document.getElementById('new-event-time');
-            const descIn = document.getElementById('new-event-desc');
-
-            if (!titleIn.value || !dateIn.value) {
-                showNotification("Event requires a valid Title and Date.", "error");
-                return;
-            }
-
-            const evObj = {
-                id: 'e_' + Date.now(),
-                title: titleIn.value.trim(),
-                date: dateIn.value.trim(),
-                time: timeIn.value.trim() || "8:00 PM",
-                desc: descIn.value.trim() || "Regular excursion parameters."
-            };
-
-            events.push(evObj);
-            localStorage.setItem('gms_events', JSON.stringify(events));
-
-            showNotification("Upcoming Expedition has been published!");
-            renderEvents();
-
-            // Clear inputs
-            titleIn.value = "";
-            dateIn.value = "";
-            timeIn.value = "";
-            descIn.value = "";
-        }
-
-        // ACTION: Save Discord integration
-        function saveWebhookSettings() {
-            const input = document.getElementById('webhook-url-input').value.trim();
-            discordWebhook = input;
-            localStorage.setItem('gms_webhook', input);
-            showNotification("Webhook integration setting updated.");
-        }
-
-        // UTILITY: Update system notification count badges
-        function updateBadges() {
-            const count = applications.length;
-            const badge = document.getElementById('nav-badge');
-            const oCenterBadge = document.getElementById('app-count-badge');
-
-            if (count > 0) {
-                badge.textContent = count;
-                badge.classList.remove('hidden');
-                oCenterBadge.textContent = count;
-            } else {
-                badge.classList.add('hidden');
-                oCenterBadge.textContent = "0";
-            }
-        }
-
-        // SYSTEM: Reset local variables
-        function resetDefaults() {
-            localStorage.removeItem('gms_roster');
-            localStorage.removeItem('gms_priorities');
-            localStorage.removeItem('gms_events');
-            localStorage.removeItem('gms_applications');
-            localStorage.removeItem('gms_webhook');
-
-            roster = DEFAULT_ROSTER;
-            priorities = DEFAULT_PRIORITIES;
-            events = DEFAULT_EVENTS;
-            applications = DEFAULT_APPLICATIONS;
-            discordWebhook = "";
-
-            document.getElementById('webhook-url-input').value = "";
-
-            populateClassSelects();
-            renderRoster();
-            renderRecruitmentNeeds();
-            renderEvents();
-            renderPendingApplications();
-            renderOfficerPriorities();
-            updateBadges();
-
-            showNotification("Systems restored to initial default values!");
-        }
-    </script>
+      if (error) {
+        alert("Error updating status: " + error.message);
+      } else {
+        fetchApplications();
+      }
+    }
+  </script>
 </body>
 </html>
