@@ -32,140 +32,9 @@
             }
         }
     </script>
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = "https://zzotvstvmnlmfrulxhvl.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable__o4vTB20JE2br9c_F3p8rQ_ez98q06n";
-        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531232336920711239/Wt-LiJ64wHumDL34ntEL0IEe2PqV5mBVYeN6GLZIvrDrbyi7kd3zEU8zdi7lRY_J6IGS";
-
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Initialize Auth State & explicitly force redirect back to GitHub Pages
-        window.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            updateAuthUI(session);
-            
-            supabaseClient.auth.onAuthStateChange((_event, session) => {
-                updateAuthUI(session);
-            });
-        });
-
-        function updateAuthUI(session) {
-            const officerSection = document.getElementById('officer-center');
-            if (session) {
-                if (officerSection) officerSection.style.display = 'block';
-                fetchApplications();
-            } else {
-                if (officerSection) officerSection.style.display = 'none';
-            }
-        }
-
-        async function loginWithDiscord() {
-            await supabaseClient.auth.signInWithOAuth({
-                provider: 'discord',
-                options: { redirectTo: 'https://strovanoski.github.io/kotgs-website/' }
-            });
-        }
-
-        async function logout() {
-            await supabaseClient.auth.signOut();
-        }
-
-        async function submitApplication(e) {
-            e.preventDefault();
-
-            const charName = document.getElementById('char-name')?.value || '';
-            const charClass = document.getElementById('char-class')?.value || '';
-            const charLevel = parseInt(document.getElementById('char-level')?.value || '1');
-            const experience = document.getElementById('experience')?.value || '';
-
-            // 1. Insert into Supabase DB
-            const { error } = await supabaseClient
-                .from('applications')
-                .insert([{ character_name: charName, character_class: charClass, character_level: charLevel, experience: experience }]);
-
-            if (error) {
-                alert("Error submitting application: " + error.message);
-                return;
-            }
-
-            // 2. Trigger Discord Webhook Notification
-            try {
-                await fetch(DISCORD_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        embeds: [{
-                            title: "⚔️ New Guild Application Received!",
-                            color: 5814786,
-                            fields: [
-                                { name: "Character", value: charName, inline: true },
-                                { name: "Class", value: charClass, inline: true },
-                                { name: "Level", value: String(charLevel), inline: true },
-                                { name: "Experience / Bio", value: experience || "N/A" }
-                            ],
-                            footer: { text: "KOTGS Website Notification" }
-                        }]
-                    })
-                });
-            } catch (err) {
-                console.error("Webhook error:", err);
-            }
-
-            alert("Application submitted successfully!");
-            document.getElementById('app-form').reset();
-        }
-
-        async function fetchApplications() {
-            const tbody = document.getElementById('applications-list');
-            if (!tbody) return;
-
-            tbody.innerHTML = "<tr><td colspan='6'>Fetching...</td></tr>";
-
-            const { data, error } = await supabaseClient
-                .from('applications')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                tbody.innerHTML = `<tr><td colspan='6'>Error: ${error.message}</td></tr>`;
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='6'>No applications found.</td></tr>";
-                return;
-            }
-
-            tbody.innerHTML = data.map(app => `
-            <tr>
-            <td>${app.character_name}</td>
-            <td>${app.character_class}</td>
-            <td>${app.character_level}</td>
-            <td>${app.experience || ''}</td>
-            <td><strong>${app.status}</strong></td>
-            <td>
-            ${app.status === 'pending' ? `
-            <button onclick="updateAppStatus('${app.id}', 'approved')">Approve</button>
-            <button onclick="updateAppStatus('${app.id}', 'rejected')">Reject</button>
-            ` : 'Done'}
-        </td>
-      </tr>
-      `).join('');
-        }
-        async function updateAppStatus(id, newStatus) {
-            const { error } = await supabaseClient
-                .from('applications')
-                .update({ status: newStatus })
-                .eq('id', id);
-
-            if (error) {
-                alert("Error updating status: " + error.message);
-            } else {
-                fetchApplications();
-            }
-        }
-    </script>
+    
     <!-- Custom Style for Retro Scrollbars and Font accents -->
     <style>
         ::-webkit-scrollbar {
@@ -195,7 +64,6 @@
                 <!-- Logo/Title -->
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
                     <div class="p-2.5 bg-gradient-to-br from-gold-600 to-amber-950 rounded-lg shadow-lg border border-gold-400/30">
-                        <!-- Custom Golden Spoon SVG Icon -->
                         <svg class="w-8 h-8 text-gold-100" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2A4 4 0 0 0 8 6c0 3.31 4 9 4 9s4-5.69 4-9a4 4 0 0 0-4-4zm0 2c1.1 0 2 .9 2 2s-2 3.5-2 3.5S10 8 10 6s.9-2 2-2zm-1 11h2v7h-2z"/>
                         </svg>
@@ -219,14 +87,27 @@
                     </button>
                 </nav>
 
-                <!-- Socials & Call to Action -->
-                <div class="hidden lg:flex items-center space-x-4">
+                <!-- Socials & Auth Controls -->
+                <div class="hidden lg:flex items-center space-x-3">
                     <a href="https://discord.gg/your-guild-link" id="discord-header-btn" target="_blank" class="flex items-center space-x-2 text-slate-300 hover:text-indigo-400 transition-colors text-sm bg-slate-800/80 px-3.5 py-2 rounded-lg border border-slate-700/50">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
                         </svg>
                         <span class="font-semibold text-xs tracking-wider">JOIN DISCORD</span>
                     </a>
+                    
+                    <!-- Discord Login/Logout Controls -->
+                    <div id="auth-header-logged-out">
+                        <button onclick="loginWithDiscord()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition-colors tracking-wider">
+                            OFFICER LOGIN
+                        </button>
+                    </div>
+                    <div id="auth-header-logged-in" class="hidden flex items-center space-x-2">
+                        <span id="header-user-name" class="text-xs text-gold-400 font-semibold"></span>
+                        <button onclick="logout()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-red-900/60 text-slate-300 hover:text-red-200 text-xs rounded border border-slate-700 transition-colors">
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Mobile Menu Button -->
@@ -246,7 +127,7 @@
             <button onclick="switchTab('roster'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Roster</button>
             <button onclick="switchTab('recruitment'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Apply</button>
             <button onclick="switchTab('officer'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded text-base font-medium text-slate-300 hover:text-gold-400">Officer Center</button>
-            <a href="https://discord.gg/your-guild-link" id="discord-mobile-btn" target="_blank" class="block text-center px-3 py-2 rounded text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Join Discord</a>
+            <button onclick="loginWithDiscord()" class="block w-full text-center px-3 py-2 rounded text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Officer Login</button>
         </div>
     </header>
 
@@ -262,7 +143,6 @@
             <!-- Hero Banner -->
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
                 <div class="relative rounded-2xl overflow-hidden border border-gold-800/40 shadow-2xl bg-slate-900/40">
-                    <!-- Pure CSS/Gradient Background to ensure stability without hosting dependencies -->
                     <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/80 to-transparent z-10"></div>
                     <div class="absolute right-0 top-0 w-1/2 h-full opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold-500 via-slate-950 to-slate-950"></div>
                     
@@ -329,7 +209,6 @@
                             
                             <!-- News Stream -->
                             <div class="space-y-6">
-                                <!-- News 1 -->
                                 <div class="border-b border-slate-800/80 pb-6 last:border-0 last:pb-0">
                                     <div class="flex items-center space-x-2 text-xs text-slate-400 mb-2">
                                         <span class="font-semibold text-gold-500">OFFICER BULLETIN</span>
@@ -338,19 +217,7 @@
                                     </div>
                                     <h4 class="text-lg font-bold text-slate-100 hover:text-gold-400 transition-colors cursor-pointer">Preparing for the Next Test Phase</h4>
                                     <p class="text-slate-400 text-sm mt-2 leading-relaxed">
-                                        As the development of Monsters & Memories proceeds, we are mobilizing our crafters and gathering materials. Our main focus in the upcoming testing build is establishing key material routes and securing high-tier armor sets for our vanguard fighters. Make sure to update your main play schedules!
-                                    </p>
-                                </div>
-                                <!-- News 2 -->
-                                <div class="border-b border-slate-800/80 pb-6 last:border-0 last:pb-0">
-                                    <div class="flex items-center space-x-2 text-xs text-slate-400 mb-2">
-                                        <span class="font-semibold text-gold-500">EVENT REVIEW</span>
-                                        <span>•</span>
-                                        <span>May 12, 2026</span>
-                                    </div>
-                                    <h4 class="text-lg font-bold text-slate-100 hover:text-gold-400 transition-colors cursor-pointer">The Great Dungeon Excursion Success</h4>
-                                    <p class="text-slate-400 text-sm mt-2 leading-relaxed">
-                                        A brilliant showing by the vanguard squad. We successfully cleared the deeper crypts, demonstrating classic coordination and keeping our squishy Wizards safe from aggro. A special commendation goes to our Clerics who kept the line stabilized under extreme stress!
+                                        As the development of Monsters & Memories proceeds, we are mobilizing our crafters and gathering materials. Our main focus in the upcoming testing build is establishing key material routes and securing high-tier armor sets for our vanguard fighters.
                                     </p>
                                 </div>
                             </div>
@@ -396,9 +263,7 @@
                                 </span>
                             </h3>
                             
-                            <div id="recruitment-needs-list" class="space-y-3">
-                                <!-- Generated Dynamically -->
-                            </div>
+                            <div id="recruitment-needs-list" class="space-y-3"></div>
                             
                             <button onclick="switchTab('recruitment')" class="w-full mt-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-gold-400 hover:text-gold-300 font-semibold rounded text-sm transition-colors border border-slate-700/80">
                                 Apply to the Guild
@@ -413,9 +278,7 @@
                                     <span>Upcoming Expeditions</span>
                                 </span>
                             </h3>
-                            <div id="events-list" class="space-y-3">
-                                <!-- Generated Dynamically -->
-                            </div>
+                            <div id="events-list" class="space-y-3"></div>
                         </div>
 
                     </div>
@@ -429,14 +292,11 @@
         <!-- ================= ROSTER VIEW ================= -->
         <section id="view-roster" class="view-section py-8 md:py-12 hidden">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <!-- Page Title -->
                 <div class="mb-8">
                     <h2 class="text-3xl font-bold font-serif text-slate-100">The Guild Ledger</h2>
                     <p class="text-slate-400 mt-1">Our sworn shield-brothers, master crafters, and veterans from ancient days.</p>
                 </div>
 
-                <!-- Filters & Search Bar -->
                 <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex-1 max-w-md relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
@@ -448,7 +308,6 @@
                     <div class="flex flex-wrap gap-3">
                         <select id="roster-class-filter" onchange="filterRoster()" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-300 focus:outline-none focus:border-gold-600">
                             <option value="All">All Classes</option>
-                            <!-- Dynamically populated -->
                         </select>
                         <select id="roster-rank-filter" onchange="filterRoster()" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-300 focus:outline-none focus:border-gold-600">
                             <option value="All">All Ranks</option>
@@ -460,16 +319,11 @@
                     </div>
                 </div>
 
-                <!-- Roster Grid -->
-                <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Dynamic Member Cards Go Here -->
-                </div>
+                <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
 
-                <!-- Empty State -->
                 <div id="roster-empty-state" class="hidden text-center py-16 bg-slate-900/50 rounded-xl border border-slate-850">
                     <p class="text-slate-400">No companions matching your filter criteria were found in our records.</p>
                 </div>
-
             </div>
         </section>
 
@@ -477,8 +331,6 @@
         <!-- ================= RECRUITMENT VIEW ================= -->
         <section id="view-recruitment" class="view-section py-8 md:py-12 hidden">
             <div class="max-w-3xl mx-auto px-4 sm:px-6">
-                
-                <!-- Section Intro -->
                 <div class="text-center mb-8">
                     <h2 class="text-3xl md:text-4xl font-bold font-serif text-slate-100">The Oath of the Golden Spoon</h2>
                     <p class="text-slate-400 mt-2 max-w-xl mx-auto">
@@ -492,30 +344,24 @@
                 <!-- Application Form -->
                 <div class="bg-slate-900 p-6 md:p-8 rounded-xl border border-gold-900/40 shadow-2xl">
                     <form id="recruitment-form" onsubmit="handleRecruitmentSubmit(event)" class="space-y-6">
-                        
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <!-- Character Name -->
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Character Name *</label>
                                 <input type="text" id="app-char-name" required placeholder="E.g., Alistair" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
                             </div>
-                            <!-- Desired Class -->
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Primary Class *</label>
                                 <select id="app-class" required class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
                                     <option value="" disabled selected>Choose your calling...</option>
-                                    <!-- Populated dynamically with actual classes -->
                                 </select>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <!-- Approximate Level -->
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Current/Intended Level</label>
                                 <input type="number" id="app-level" min="1" max="100" placeholder="1" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
                             </div>
-                            <!-- Primary Archetype Focus -->
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Primary Specialization Focus</label>
                                 <select id="app-focus" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
@@ -526,19 +372,16 @@
                             </div>
                         </div>
 
-                        <!-- Discord Tag -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Discord Username *</label>
                             <input type="text" id="app-discord" required placeholder="E.g., spoon_knight#1234" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors">
                         </div>
 
-                        <!-- Bio / Motivation -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Tell us about your history in online RPGs</label>
                             <textarea id="app-bio" rows="4" placeholder="Share your experience (especially if you remember classic environments like The Realm or other legendary virtual worlds)..." class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-gold-600 transition-colors"></textarea>
                         </div>
 
-                        <!-- Vow / Affirmation Agreement -->
                         <div class="bg-slate-950 p-4 rounded-lg border border-gold-900/30">
                             <div class="flex items-start">
                                 <div class="flex items-center h-5">
@@ -551,7 +394,6 @@
                             </div>
                         </div>
 
-                        <!-- Submit Button -->
                         <div>
                             <button type="submit" class="w-full py-3 bg-gradient-to-r from-gold-600 to-amber-700 hover:from-gold-500 hover:to-amber-600 text-slate-950 font-bold rounded-lg shadow-lg shadow-gold-900/20 hover:shadow-gold-800/30 transition-all uppercase tracking-wider text-sm">
                                 Submit Pledge Application
@@ -559,7 +401,6 @@
                         </div>
                     </form>
                 </div>
-
             </div>
         </section>
 
@@ -568,56 +409,30 @@
         <section id="view-officer" class="view-section py-8 md:py-12 hidden">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
-                <!-- Page Title -->
                 <div class="mb-8 border-b border-slate-800 pb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-3xl font-bold font-serif text-slate-100">Officer Command Center</h2>
                         <p class="text-slate-400 mt-1">Manage recruiting applications, create new expeditions, and update class priorities.</p>
                     </div>
-                    <!-- System Reset button -->
-                    <button onclick="resetDefaults()" class="text-xs text-slate-500 hover:text-red-400 border border-slate-800 hover:border-red-900/50 px-3 py-1.5 rounded transition-all">
-                        Reset System Defaults
-                    </button>
                 </div>
 
-                <!-- Discord Webhook Box -->
-                <div class="mb-8 bg-slate-900 p-6 rounded-xl border border-slate-800">
-                    <h3 class="text-lg font-bold font-serif text-slate-100 mb-2 flex items-center space-x-2">
-                        <!-- Discord SVG icon -->
-                        <svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-                        <span>Discord Integration Link (Recruitment Webhook)</span>
-                    </h3>
-                    <p class="text-sm text-slate-400 mb-4">
-                        If configured, prospective members submitting your Oath form will generate detailed alerts instantly in your Discord. Create a webhook in Discord (Channel Settings &gt; Integrations &gt; Webhooks) and paste it below.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="password" id="webhook-url-input" placeholder="https://discord.com/api/webhooks/..." class="flex-grow px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
-                        <button onclick="saveWebhookSettings()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg transition-colors">
-                            Save Configuration
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Three Columns: Setup Priorities, Pending Applications, Add Events -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
                     <!-- COLUMN 1: Pending Applications -->
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-xl font-bold font-serif text-slate-100 mb-4 flex items-center justify-between">
-                                <span>Pledges Awaiting Review</span>
+                                <span>Pledges Awaiting Review (Supabase DB)</span>
                                 <span id="app-count-badge" class="bg-gold-600 text-slate-950 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
                             </h3>
                             <div id="pending-applications-list" class="space-y-4">
-                                <!-- Dynamic Pending Applications Go Here -->
+                                <p class="text-slate-500 text-sm italic">Loading applications from Supabase...</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- COLUMN 2: Expeditions & Priorities Manager -->
                     <div class="space-y-8">
-                        
-                        <!-- Create Expedition Event -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Schedule New Expedition</h3>
                             <div class="space-y-4">
@@ -648,11 +463,8 @@
                         <!-- Class Priority Configuration -->
                         <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Set Class Priorities</h3>
-                            <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2" id="officer-priority-list">
-                                <!-- Dynamic Priorities list with +/- buttons -->
-                            </div>
+                            <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2" id="officer-priority-list"></div>
                         </div>
-
                     </div>
 
                 </div>
@@ -678,31 +490,23 @@
         </div>
     </footer>
 
-    <!-- JS Logic and Storage Integration -->
+    <!-- JS Logic, Supabase & Discord Integration -->
     <script>
+        // Injected Supabase and Discord Credentials
+        const SUPABASE_URL = "https://zzotvstvmnlmfrulxhvl.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable__o4vTB20JE2br9c_F3p8rQ_ez98q06n";
+        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531232336920711239/Wt-LiJ64wHumDL34ntEL0IEe2PqV5mBVYeN6GLZIvrDrbyi7kd3zEU8zdi7lRY_J6IGS";
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         // Official 18 playable classes for Monsters & Memories
         const MM_CLASSES = [
-            "Bard",
-            "Beastmaster",
-            "Cleric",
-            "Druid",
-            "Elementalist",
-            "Enchanter",
-            "Fighter",
-            "Inquisitor",
-            "Magician",
-            "Monk",
-            "Necromancer",
-            "Paladin",
-            "Ranger",
-            "Rogue",
-            "Shadow Knight",
-            "Shaman",
-            "Spellblade",
-            "Wizard"
+            "Bard", "Beastmaster", "Cleric", "Druid", "Elementalist", "Enchanter",
+            "Fighter", "Inquisitor", "Magician", "Monk", "Necromancer", "Paladin",
+            "Ranger", "Rogue", "Shadow Knight", "Shaman", "Spellblade", "Wizard"
         ];
 
-        // Default Data Set
+        // Default Data Set for Local State
         const DEFAULT_ROSTER = [
             { id: "1", name: "Aethelred", class: "Paladin", level: 25, rank: "Grandmaster", focus: "PvE Dungeons", discord: "aeth#1996" },
             { id: "2", name: "Morwenna", class: "Enchanter", level: 22, rank: "Officer", focus: "PvE Dungeons", discord: "morw_ench" },
@@ -713,12 +517,8 @@
         ];
 
         const DEFAULT_PRIORITIES = {
-            "Cleric": "High",
-            "Enchanter": "High",
-            "Shadow Knight": "Medium",
-            "Spellblade": "Medium",
-            "Inquisitor": "Low",
-            "Wizard": "Low"
+            "Cleric": "High", "Enchanter": "High", "Shadow Knight": "Medium",
+            "Spellblade": "Medium", "Inquisitor": "Low", "Wizard": "Low"
         };
 
         const DEFAULT_EVENTS = [
@@ -726,59 +526,227 @@
             { id: "e2", title: "Guild Council Gathering", date: "July 29", time: "9:00 PM", desc: "Briefing for ancient members." }
         ];
 
-        const DEFAULT_APPLICATIONS = [
-            {
-                id: "mock1",
-                charName: "Oakhaven",
-                class: "Beastmaster",
-                level: 12,
-                focus: "Casual Adventurer",
-                discord: "oakhaven_mmo",
-                bio: "Remembered your name from Sierra's The Realm Online back in late 90s! Really excited to join up with a group of mature RPG veterans.",
-                timestamp: Date.now()
-            }
-        ];
-
-        // State variables initialized from Local Storage
         let roster = JSON.parse(localStorage.getItem('gms_roster')) || DEFAULT_ROSTER;
         let priorities = JSON.parse(localStorage.getItem('gms_priorities')) || DEFAULT_PRIORITIES;
         let events = JSON.parse(localStorage.getItem('gms_events')) || DEFAULT_EVENTS;
-        let applications = JSON.parse(localStorage.getItem('gms_applications')) || DEFAULT_APPLICATIONS;
-        let discordWebhook = localStorage.getItem('gms_webhook') || "";
 
-        // Application initialization
-        window.addEventListener('DOMContentLoaded', () => {
+        // Initialize Application & Auth Listeners
+        window.addEventListener('DOMContentLoaded', async () => {
             populateClassSelects();
             renderRoster();
             renderRecruitmentNeeds();
             renderEvents();
-            renderPendingApplications();
             renderOfficerPriorities();
-            updateBadges();
 
-            // Setup input value for Webhook if exists
-            if (discordWebhook) {
-                document.getElementById('webhook-url-input').value = discordWebhook;
-            }
+            // Check Supabase session
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            updateAuthUI(session);
+
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
+                updateAuthUI(session);
+            });
         });
 
-        // Populate dropdown selectors dynamically
+        function updateAuthUI(session) {
+            const loggedOutHeader = document.getElementById('auth-header-logged-out');
+            const loggedInHeader = document.getElementById('auth-header-logged-in');
+            const userNameSpan = document.getElementById('header-user-name');
+
+            if (session) {
+                if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
+                if (loggedInHeader) loggedInHeader.classList.remove('hidden');
+                if (userNameSpan) userNameSpan.textContent = session.user.user_metadata.full_name || session.user.email;
+                fetchApplicationsFromSupabase();
+            } else {
+                if (loggedOutHeader) loggedOutHeader.classList.remove('hidden');
+                if (loggedInHeader) loggedInHeader.classList.add('hidden');
+            }
+        }
+
+        async function loginWithDiscord() {
+            await supabaseClient.auth.signInWithOAuth({
+                provider: 'discord',
+                options: { redirectTo: 'https://strovanoski.github.io/kotgs-website/' }
+            });
+        }
+
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            showNotification("Signed out successfully.");
+        }
+
+        // Submit Application to Supabase & Trigger Discord Webhook
+        async function handleRecruitmentSubmit(event) {
+            event.preventDefault();
+
+            const nameInput = document.getElementById('app-char-name');
+            const classInput = document.getElementById('app-class');
+            const levelInput = document.getElementById('app-level');
+            const focusInput = document.getElementById('app-focus');
+            const discordInput = document.getElementById('app-discord');
+            const bioInput = document.getElementById('app-bio');
+
+            const charName = nameInput.value.trim();
+            const charClass = classInput.value;
+            const charLevel = parseInt(levelInput.value) || 1;
+            const focus = focusInput.value;
+            const discordTag = discordInput.value.trim();
+            const bio = bioInput.value.trim() || "No historic stories recorded.";
+
+            showNotification("Submitting application to Supabase...");
+
+            // 1. Insert into Supabase DB
+            const { error } = await supabaseClient
+                .from('applications')
+                .insert([{
+                    applicant_discord_id: discordTag,
+                    applicant_username: discordTag,
+                    character_name: charName,
+                    character_class: charClass,
+                    character_level: charLevel,
+                    experience: bio,
+                    notes: focus
+                }]);
+
+            if (error) {
+                showNotification("Error saving application: " + error.message, "error");
+                return;
+            }
+
+            showNotification("Application saved to database!");
+
+            // 2. Trigger Discord Webhook Notification
+            try {
+                const embedPayload = {
+                    embeds: [{
+                        title: "⚔️ New Guild Application Received!",
+                        color: 15301131,
+                        description: `The sacred vow has been sworn by **${charName}** to the Knights of the Golden Spoon.`,
+                        fields: [
+                            { name: "Character Class", value: charClass, inline: true },
+                            { name: "Level", value: String(charLevel), inline: true },
+                            { name: "Play Focus", value: focus, inline: true },
+                            { name: "Discord Contact", value: discordTag, inline: false },
+                            { name: "Backstory / Bio", value: bio }
+                        ],
+                        footer: { text: "For Justice, Honor, and the Glory of the Golden Spoon!!" },
+                        timestamp: new Date().toISOString()
+                    }]
+                };
+
+                await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(embedPayload)
+                });
+                showNotification("Application notification sent to Discord!");
+            } catch (e) {
+                console.error("Webhook error:", e);
+            }
+
+            document.getElementById('recruitment-form').reset();
+            fetchApplicationsFromSupabase();
+            switchTab('home');
+        }
+
+        // Fetch Applications directly from Supabase for Officer Center
+        async function fetchApplicationsFromSupabase() {
+            const container = document.getElementById('pending-applications-list');
+            if (!container) return;
+
+            container.innerHTML = `<p class="text-slate-500 text-sm italic">Fetching from Supabase...</p>`;
+
+            const { data, error } = await supabaseClient
+                .from('applications')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                container.innerHTML = `<p class="text-red-400 text-sm">Error loading applications: ${error.message}</p>`;
+                return;
+            }
+
+            const pendingApps = data ? data.filter(a => a.status === 'pending') : [];
+
+            document.getElementById('nav-badge').textContent = pendingApps.length;
+            document.getElementById('app-count-badge').textContent = pendingApps.length;
+            if (pendingApps.length > 0) {
+                document.getElementById('nav-badge').classList.remove('hidden');
+            } else {
+                document.getElementById('nav-badge').classList.add('hidden');
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-500">
+                        <p class="text-sm italic">No applications found in the database.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.map(app => `
+                <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-850 pb-3 gap-2">
+                        <div>
+                            <span class="text-xs text-gold-500 font-semibold uppercase tracking-wider">Applied ${new Date(app.created_at).toLocaleDateString()}</span>
+                            <h4 class="text-lg font-bold text-slate-100">${app.character_name}</h4>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-[10px] font-bold">
+                            <span class="bg-indigo-950 border border-indigo-900 text-indigo-400 px-2 py-0.5 rounded">${app.character_class}</span>
+                            <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2 py-0.5 rounded">LVL ${app.character_level}</span>
+                            <span class="bg-amber-950 border border-amber-900 text-amber-400 px-2 py-0.5 rounded">${app.status.toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1">Applicant's Chronicle</span>
+                        <p class="text-slate-300 text-sm whitespace-pre-line leading-relaxed italic bg-slate-900 p-3 rounded border border-slate-850">${app.experience || 'N/A'}</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-2 gap-4">
+                        <span class="text-xs text-slate-400 font-mono">Discord: <span class="text-slate-200 font-bold">${app.applicant_username || 'N/A'}</span></span>
+                        ${app.status === 'pending' ? `
+                            <div class="flex gap-2">
+                                <button onclick="updateAppStatusInSupabase('${app.id}', 'approved')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded transition-all uppercase tracking-wider">
+                                    Approve
+                                </button>
+                                <button onclick="updateAppStatusInSupabase('${app.id}', 'rejected')" class="px-4 py-1.5 bg-red-900/50 hover:bg-red-800/80 text-red-200 border border-red-800/40 text-xs rounded transition-all uppercase tracking-wider">
+                                    Reject
+                                </button>
+                            </div>
+                        ` : `<span class="text-xs font-semibold text-slate-500">Status: ${app.status}</span>`}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateAppStatusInSupabase(id, newStatus) {
+            const { error } = await supabaseClient
+                .from('applications')
+                .update({ status: newStatus })
+                .eq('id', id);
+
+            if (error) {
+                showNotification("Error updating status: " + error.message, "error");
+            } else {
+                showNotification(`Application updated to ${newStatus}.`);
+                fetchApplicationsFromSupabase();
+            }
+        }
+
+        // Helper UI Functions
         function populateClassSelects() {
             const rosterFilterSelect = document.getElementById('roster-class-filter');
             const appClassSelect = document.getElementById('app-class');
 
-            // Clear defaults except placeholder
             rosterFilterSelect.innerHTML = `<option value="All">All Classes</option>`;
             appClassSelect.innerHTML = `<option value="" disabled selected>Choose your calling...</option>`;
 
             MM_CLASSES.forEach(cls => {
-                // To Roster filter
                 const optRoster = document.createElement('option');
                 optRoster.value = cls;
                 optRoster.textContent = cls;
                 rosterFilterSelect.appendChild(optRoster);
 
-                // To Application dropdown
                 const optApp = document.createElement('option');
                 optApp.value = cls;
                 optApp.textContent = cls;
@@ -786,7 +754,6 @@
             });
         }
 
-        // Display Alert Toast
         function showNotification(msg, type = "success") {
             const container = document.getElementById('notification-container');
             const toast = document.createElement('div');
@@ -798,28 +765,22 @@
             toast.textContent = msg;
             container.appendChild(toast);
 
-            // Animate entry
             setTimeout(() => {
                 toast.classList.remove('translate-y-2', 'opacity-0');
             }, 10);
 
-            // Exit animation & Removal
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => toast.remove(), 300);
             }, 4000);
         }
 
-        // Switch main views
         function switchTab(tabId) {
-            // Hide all sections
             document.querySelectorAll('.view-section').forEach(section => {
                 section.classList.add('hidden');
             });
-            // Show active section
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
 
-            // Update nav item highlights
             document.querySelectorAll('header nav button').forEach(btn => {
                 btn.className = "px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-gold-400 hover:bg-slate-800/30";
             });
@@ -829,18 +790,14 @@
             }
         }
 
-        // Toggle mobile menu display
         function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('hidden');
         }
 
-        // RENDER: Front-end recruitment priority items
         function renderRecruitmentNeeds() {
             const container = document.getElementById('recruitment-needs-list');
             container.innerHTML = "";
 
-            // Sort so high is at top
             const sorted = Object.entries(priorities).sort((a, b) => {
                 const map = { "High": 3, "Medium": 2, "Low": 1 };
                 return map[b[1]] - map[a[1]];
@@ -861,7 +818,6 @@
             });
         }
 
-        // RENDER: Events Calendar
         function renderEvents() {
             const container = document.getElementById('events-list');
             container.innerHTML = "";
@@ -885,7 +841,6 @@
             });
         }
 
-        // RENDER: Main Roster view
         function renderRoster() {
             const container = document.getElementById('roster-grid');
             container.innerHTML = "";
@@ -945,160 +900,9 @@
             renderRoster();
         }
 
-        // ACTION: Manage and send recruitment form
-        async function handleRecruitmentSubmit(event) {
-            event.preventDefault();
-
-            const nameInput = document.getElementById('app-char-name');
-            const classInput = document.getElementById('app-class');
-            const levelInput = document.getElementById('app-level');
-            const focusInput = document.getElementById('app-focus');
-            const discordInput = document.getElementById('app-discord');
-            const bioInput = document.getElementById('app-bio');
-
-            const appData = {
-                id: 'app_' + Date.now(),
-                charName: nameInput.value.trim(),
-                class: classInput.value,
-                level: parseInt(levelInput.value) || 1,
-                focus: focusInput.value,
-                discord: discordInput.value.trim(),
-                bio: bioInput.value.trim() || "No historic stories recorded.",
-                timestamp: Date.now()
-            };
-
-            // Store internally
-            applications.push(appData);
-            localStorage.setItem('gms_applications', JSON.stringify(applications));
-
-            // Notify Locally
-            showNotification(`Application submitted! Let an officer review it in the Command Center.`);
-
-            // Send to Discord Webhook if setup
-            if (discordWebhook && discordWebhook.startsWith('http')) {
-                try {
-                    const embedPayload = {
-                        embeds: [{
-                            title: "🚨 New Recruiter Pledge Submitted! 🚨",
-                            color: 15301131, // Gold color code
-                            description: `The sacred vow has been sworn by **${appData.charName}** to the Knights of the Golden Spoon.`,
-                            fields: [
-                                { name: "Character Class", value: appData.class, inline: true },
-                                { name: "Level", value: appData.level.toString(), inline: true },
-                                { name: "Play Focus", value: appData.focus, inline: true },
-                                { name: "Discord Account", value: appData.discord, inline: false },
-                                { name: "Backstory / Chronicle", value: appData.bio }
-                            ],
-                            footer: {
-                                text: "For Justice, Honor, and the Glory of the Golden Spoon!!"
-                            },
-                            timestamp: new Date().toISOString()
-                        }]
-                    };
-
-                    await fetch(discordWebhook, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(embedPayload)
-                    });
-                    showNotification("Application has been beamed directly to your guild Discord!");
-                } catch (e) {
-                    showNotification("Local save complete, but Discord integration ran into a pipeline error.", "error");
-                }
-            }
-
-            // Reset inputs
-            document.getElementById('recruitment-form').reset();
-            updateBadges();
-            renderPendingApplications();
-            switchTab('home');
-        }
-
-        // RENDER: Applications list inside Officers tab
-        function renderPendingApplications() {
-            const container = document.getElementById('pending-applications-list');
-            container.innerHTML = "";
-
-            if (applications.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-slate-500">
-                        <p class="text-sm italic">All applications have been fully processed. The guild welcomes your vigilance!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            applications.forEach((app, index) => {
-                const dateStr = new Date(app.timestamp).toLocaleDateString();
-                const card = document.createElement('div');
-                card.className = "bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4";
-                card.innerHTML = `
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-850 pb-3 gap-2">
-                        <div>
-                            <span class="text-xs text-gold-500 font-semibold uppercase tracking-wider">Applied ${dateStr}</span>
-                            <h4 class="text-lg font-bold text-slate-100">${app.charName}</h4>
-                        </div>
-                        <div class="flex flex-wrap gap-2 text-[10px] font-bold">
-                            <span class="bg-indigo-950 border border-indigo-900 text-indigo-400 px-2 py-0.5 rounded">${app.class}</span>
-                            <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2 py-0.5 rounded">LVL ${app.level}</span>
-                            <span class="bg-amber-950 border border-amber-900 text-amber-400 px-2 py-0.5 rounded">${app.focus}</span>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1">Applicant's Chronicle</span>
-                        <p class="text-slate-300 text-sm whitespace-pre-line leading-relaxed italic bg-slate-900 p-3 rounded border border-slate-850">${app.bio}</p>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-2 gap-4">
-                        <span class="text-xs text-slate-400 font-mono">Discord Contact: <span class="text-slate-200 font-bold">${app.discord}</span></span>
-                        <div class="flex gap-2">
-                            <button onclick="processApp('${app.id}', 'approve')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded transition-all uppercase tracking-wider">
-                                Approve
-                            </button>
-                            <button onclick="processApp('${app.id}', 'reject')" class="px-4 py-1.5 bg-red-900/50 hover:bg-red-800/80 text-red-200 border border-red-800/40 text-xs rounded transition-all uppercase tracking-wider">
-                                Reject
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // ACTION: Process pending apps
-        function processApp(appId, decision) {
-            const targetApp = applications.find(a => a.id === appId);
-            if (!targetApp) return;
-
-            if (decision === "approve") {
-                // Add to roster state
-                const newMember = {
-                    id: 'm_' + Date.now(),
-                    name: targetApp.charName,
-                    class: targetApp.class,
-                    level: targetApp.level,
-                    rank: "Initiate",
-                    focus: targetApp.focus,
-                    discord: targetApp.discord
-                };
-                roster.push(newMember);
-                localStorage.setItem('gms_roster', JSON.stringify(roster));
-                showNotification(`${targetApp.charName} approved and added to the guild roster ledger!`);
-            } else {
-                showNotification(`Application of ${targetApp.charName} was quietly deleted.`, "error");
-            }
-
-            // Remove app and update views
-            applications = applications.filter(a => a.id !== appId);
-            localStorage.setItem('gms_applications', JSON.stringify(applications));
-
-            updateBadges();
-            renderPendingApplications();
-            renderRoster();
-        }
-
-        // RENDER & ACTION: Priorities inside Officers view
         function renderOfficerPriorities() {
             const container = document.getElementById('officer-priority-list');
+            if (!container) return;
             container.innerHTML = "";
 
             MM_CLASSES.forEach(cls => {
@@ -1126,7 +930,6 @@
             showNotification(`Updated recruitment priority for ${className} to ${priorityLevel}.`);
         }
 
-        // ACTION: Add custom Expedition Event
         function addNewEvent() {
             const titleIn = document.getElementById('new-event-title');
             const dateIn = document.getElementById('new-event-date');
@@ -1152,62 +955,10 @@
             showNotification("Upcoming Expedition has been published!");
             renderEvents();
 
-            // Clear inputs
             titleIn.value = "";
             dateIn.value = "";
             timeIn.value = "";
             descIn.value = "";
-        }
-
-        // ACTION: Save Discord integration
-        function saveWebhookSettings() {
-            const input = document.getElementById('webhook-url-input').value.trim();
-            discordWebhook = input;
-            localStorage.setItem('gms_webhook', input);
-            showNotification("Webhook integration setting updated.");
-        }
-
-        // UTILITY: Update system notification count badges
-        function updateBadges() {
-            const count = applications.length;
-            const badge = document.getElementById('nav-badge');
-            const oCenterBadge = document.getElementById('app-count-badge');
-
-            if (count > 0) {
-                badge.textContent = count;
-                badge.classList.remove('hidden');
-                oCenterBadge.textContent = count;
-            } else {
-                badge.classList.add('hidden');
-                oCenterBadge.textContent = "0";
-            }
-        }
-
-        // SYSTEM: Reset local variables
-        function resetDefaults() {
-            localStorage.removeItem('gms_roster');
-            localStorage.removeItem('gms_priorities');
-            localStorage.removeItem('gms_events');
-            localStorage.removeItem('gms_applications');
-            localStorage.removeItem('gms_webhook');
-
-            roster = DEFAULT_ROSTER;
-            priorities = DEFAULT_PRIORITIES;
-            events = DEFAULT_EVENTS;
-            applications = DEFAULT_APPLICATIONS;
-            discordWebhook = "";
-
-            document.getElementById('webhook-url-input').value = "";
-
-            populateClassSelects();
-            renderRoster();
-            renderRecruitmentNeeds();
-            renderEvents();
-            renderPendingApplications();
-            renderOfficerPriorities();
-            updateBadges();
-
-            showNotification("Systems restored to initial default values!");
         }
     </script>
 </body>
