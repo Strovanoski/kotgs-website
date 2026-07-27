@@ -614,7 +614,11 @@
         // Supabase & Discord Credentials
         const SUPABASE_URL = "https://zzotvstvmnlmfrulxhvl.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable__o4vTB20JE2br9c_F3p8rQ_ez98q06n";
-        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1531232336920711239/Wt-LiJ64wHumDL34ntEL0IEe2PqV5mBVYeN6GLZIvrDrbyi7kd3zEU8zdi7lRY_J6IGS";
+
+        // Dedicated Discord Webhooks
+        const DISCORD_APPLICATIONS_WEBHOOK_URL = "https://discord.com/api/webhooks/1531232336920711239/Wt-LiJ64wHumDL34ntEL0IEe2PqV5mBVYeN6GLZIvrDrbyi7kd3zEU8zdi7lRY_J6IGS";
+        const DISCORD_NEWS_WEBHOOK_URL = "https://discord.com/api/webhooks/1531349501951082547/Yp7kx2fAvxEYjyrJgK4QUnfeLK49mWePMaehd5re0EqThmHT4jbnhLfGc8aGyh75TObs";
+        const DISCORD_EVENTS_WEBHOOK_URL = "https://discord.com/api/webhooks/1531349718570106964/oy_R8LS4ynFyYJ2uWhncN66IUWBbs-AOuDHry9cjR7W32PCGk4BGOjzyQavb-ZXlbCMA";
 
         // Discord Server & Role IDs
         const DISCORD_GUILD_ID = "1527962374366040084";
@@ -986,7 +990,7 @@
                 }
 
                 try {
-                    await fetch(DISCORD_WEBHOOK_URL, {
+                    await fetch(DISCORD_NEWS_WEBHOOK_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -994,7 +998,7 @@
                                 title: `📢 ${categoryIn.value}: ${titleIn.value.trim()}`,
                                 color: 15301131,
                                 description: contentIn.value.trim(),
-                                footer: { text: "KOTGS Website Bulletin" },
+                                footer: { text: "KOTGS News Squire" },
                                 timestamp: new Date().toISOString()
                             }]
                         })
@@ -1320,7 +1324,7 @@
                 }
 
                 try {
-                    await fetch(DISCORD_WEBHOOK_URL, {
+                    await fetch(DISCORD_EVENTS_WEBHOOK_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1331,7 +1335,7 @@
                                     { name: "Date & Time", value: `${dateIn.value.trim()} @ ${timeIn.value.trim() || '8:00 PM'}`, inline: true },
                                     { name: "Objective", value: descIn.value.trim() || "Regular excursion." }
                                 ],
-                                footer: { text: "For Justice, Honor, and the Glory of the Golden Spoon!!" },
+                                footer: { text: "KOTGS Events Sergeant" },
                                 timestamp: new Date().toISOString()
                             }]
                         })
@@ -1511,7 +1515,7 @@
                     }]
                 };
 
-                await fetch(DISCORD_WEBHOOK_URL, {
+                await fetch(DISCORD_APPLICATIONS_WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(embedPayload)
