@@ -1,0 +1,17 @@
+/* Retro Scrollbars and Medieval Border Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+    background: #b45309;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #d97706;
+}
+.medieval-border {
+    border-image: linear-gradient(to bottom, #d97706, #451a03) 1;
+}
