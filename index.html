@@ -461,12 +461,12 @@
                 <div class="mb-8 border-b border-gold-900/30 pb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-3xl font-bold font-serif text-slate-100">Officer Command Center</h2>
-                        <p class="text-slate-400 mt-1">Manage recruiting applications, Oath/Charter content, resource links, victory gallery, expeditions, and class priorities.</p>
+                        <p class="text-slate-400 mt-1">Manage recruiting applications, expeditions, bulletins, Oath/Charter content, resource links, victory gallery, and class priorities.</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- COLUMN 1: Applications, Roster, Resources & Gallery Admin -->
+                    <!-- COLUMN 1: Applications, Roster, Expeditions List, News List, Resources & Gallery Admin -->
                     <div class="lg:col-span-2 space-y-8">
                         <!-- Pending Applications -->
                         <div class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 shadow-xl">
@@ -487,6 +487,22 @@
                             </div>
                         </div>
 
+                        <!-- Manage Published Expeditions -->
+                        <div class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 shadow-xl">
+                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Scheduled Expeditions</h3>
+                            <div id="officer-event-manager-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                                <p class="text-slate-500 text-sm italic">Loading expeditions for management...</p>
+                            </div>
+                        </div>
+
+                        <!-- Manage Live News Bulletins -->
+                        <div class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 shadow-xl">
+                            <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Live News Bulletins</h3>
+                            <div id="officer-news-manager-list" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                                <p class="text-slate-500 text-sm italic">Loading news for management...</p>
+                            </div>
+                        </div>
+
                         <!-- Manage Resource Links -->
                         <div class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 shadow-xl">
                             <h3 class="text-xl font-bold font-serif text-slate-100 mb-4">Manage Resource Hub Links</h3>
@@ -504,8 +520,76 @@
                         </div>
                     </div>
 
-                    <!-- COLUMN 2: Charter, Forms for Resources, Gallery, News & Events -->
+                    <!-- COLUMN 2: Editor Forms for Expeditions, News, Oath, Resources & Gallery -->
                     <div class="space-y-8">
+                        <!-- Schedule/Edit Expedition Form -->
+                        <div class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 shadow-xl">
+                            <h3 id="event-form-title" class="text-lg font-bold font-serif text-slate-100 mb-4">Schedule New Expedition</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Event Title</label>
+                                    <input type="text" id="new-event-title" placeholder="E.g., Crypts Dungeon Run" class="w-full px-3 py-2 bg-[#070b12] border border-gold-900/30 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date</label>
+                                        <input type="text" id="new-event-date" placeholder="August 2" class="w-full px-3 py-2 bg-[#070b12] border border-gold-900/30 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Time (EST)</label>
+                                        <input type="text" id="new-event-time" placeholder="8:00 PM" class="w-full px-3 py-2 bg-[#070b12] border border-gold-900/30 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Event Objective</label>
+                                    <input type="text" id="new-event-desc" placeholder="E.g., Guild Council & Dungeons." class="w-full px-3 py-2 bg-[#070b12] border border-gold-900/30 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="addNewEvent()" id="publish-event-btn" class="flex-grow py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
+                                        Publish Expedition
+                                    </button>
+                                    <button onclick="cancelEditEvent()" id="cancel-event-btn" class="hidden px-4 py-2 bg-[#070b12] hover:bg-slate-800 text-slate-300 font-semibold rounded-lg text-sm transition-colors">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Publish/Edit Guild News Bulletin Form -->
+                        <div class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 shadow-xl">
+                            <h3 id="news-form-title" class="text-lg font-bold font-serif text-slate-100 mb-4">Publish Guild News / Bulletin</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Category</label>
+                                    <select id="new-news-category" class="w-full px-3 py-2 bg-[#070b12] border border-gold-900/30 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                        <option value="OFFICER BULLETIN">OFFICER BULLETIN</option>
+                                        <option value="CAMPAIGN UPDATE">CAMPAIGN UPDATE</option>
+                                        <option value="EVENT REVIEW">EVENT REVIEW</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">News Title</label>
+                                    <input type="text" id="new-news-title" placeholder="E.g., Preparing for Next Test Phase" class="w-full px-3 py-2 bg-[#070b12] border border-gold-900/30 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Date Header</label>
+                                    <input type="text" id="new-news-date" placeholder="E.g., July 27, 2026" class="w-full px-3 py-2 bg-[#070b12] border border-gold-900/30 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Bulletin Content</label>
+                                    <textarea id="new-news-content" rows="4" placeholder="Enter bulletin details..." class="w-full px-3 py-2 bg-[#070b12] border border-gold-900/30 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-gold-600"></textarea>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="addNewNews()" id="publish-news-btn" class="flex-grow py-2 bg-gold-600 hover:bg-gold-500 text-slate-950 font-bold rounded-lg text-sm transition-colors uppercase tracking-wider">
+                                        Publish News Article
+                                    </button>
+                                    <button onclick="cancelEditNews()" id="cancel-news-btn" class="hidden px-4 py-2 bg-[#070b12] hover:bg-slate-800 text-slate-300 font-semibold rounded-lg text-sm transition-colors">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Edit Oath & Charter Form -->
                         <div class="bg-[#0a0f1d] p-6 rounded-xl border border-gold-900/30 shadow-xl">
                             <h3 class="text-lg font-bold font-serif text-slate-100 mb-4">Manage Oath & Charter</h3>
