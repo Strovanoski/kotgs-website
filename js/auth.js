@@ -23,12 +23,14 @@ async function updateAuthUI(session) {
     const mobileProfileBtn = document.getElementById('mobile-nav-profile');
     const officerNavBtn = document.getElementById('nav-officer');
     const mobileOfficerBtn = document.getElementById('mobile-nav-officer');
+    const discordHeaderBtn = document.getElementById('discord-header-btn');
 
     if (session) {
         if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
         if (loggedInHeader) loggedInHeader.classList.remove('hidden');
         if (profileNavBtn) profileNavBtn.classList.remove('hidden');
         if (mobileProfileBtn) mobileProfileBtn.classList.remove('hidden');
+        if (discordHeaderBtn) discordHeaderBtn.classList.add('hidden');
 
         const roleData = await checkDiscordRoles(session);
         const isOfficer = roleData.isOfficer || roleData.isGrandmaster;
@@ -56,6 +58,7 @@ async function updateAuthUI(session) {
         if (mobileProfileBtn) mobileProfileBtn.classList.add('hidden');
         if (officerNavBtn) officerNavBtn.classList.add('hidden');
         if (mobileOfficerBtn) mobileOfficerBtn.classList.add('hidden');
+        if (discordHeaderBtn) discordHeaderBtn.classList.remove('hidden');
         document.getElementById('view-officer').classList.add('hidden');
         document.getElementById('view-profile').classList.add('hidden');
     }
@@ -188,3 +191,4 @@ async function saveUserProfile() {
         await fetchRosterFromSupabase();
     }
 }
+```[cite: 8]
