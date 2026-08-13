@@ -443,3 +443,28 @@ async function triggerDiscordRosterSync() {
         showNotification("Sync error: " + err.message, "error");
     }
 }
+
+async function triggerDiscordRosterSync() {
+    if (typeof showNotification === 'function') {
+        showNotification("Syncing full Discord server roster...");
+    }
+
+    try {
+        // Use supabaseClient.functions.invoke to handle apikey, CORS headers, and auth automatically
+        const { data, error } = await supabaseClient.functions.invoke('sync-discord-roster');
+
+        if (error) {
+            console.error("Functions invoke error:", error);
+            showNotification("Sync failed: " + (error.message || "Unknown error"), "error");
+            return;
+        }
+
+        showNotification(data?.message || "Discord roster synced successfully!", "success");
+        if (typeof fetchRosterFromSupabase === 'function') {
+            await fetchRosterFromSupabase();
+        }
+    } catch (err) {
+        console.error("Error triggering roster sync:", err);
+        showNotification("Sync error: " + err.message, "error");
+    }
+}
