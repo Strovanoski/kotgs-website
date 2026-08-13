@@ -86,7 +86,7 @@ async function submitRSVP(eventId, status) {
         }, { onConflict: 'event_id,user_id' });
 
     if (error) {
-        showNotification("RSVP saved locally.");
+        showNotification("Error saving RSVP: " + error.message, "error");
     } else {
         showNotification("RSVP updated successfully!");
     }
@@ -231,32 +231,5 @@ async function deleteEvent(id) {
     } else {
         showNotification("Expedition deleted.");
         await fetchEventsFromSupabase();
-    }
-}
-
-async function triggerDiscordRosterSync() {
-    if (typeof showNotification === 'function') {
-        showNotification("Syncing full Discord server roster...");
-    }
-
-    try {
-        const res = await fetch("https://zzotvstvmnlmfrulxhvl.supabase.co/functions/v1/sync-discord-roster", {
-            headers: {
-                Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-            }
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            showNotification(data.message || "Discord roster synced successfully!", "success");
-            if (typeof fetchRosterFromSupabase === 'function') {
-                await fetchRosterFromSupabase();
-            }
-        } else {
-            showNotification("Sync failed: " + (data.error || "Unknown error"), "error");
-        }
-    } catch (err) {
-        console.error("Error triggering roster sync:", err);
-        showNotification("Sync error: " + err.message, "error");
     }
 }
