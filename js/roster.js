@@ -423,43 +423,23 @@ async function triggerDiscordRosterSync() {
     }
 
     try {
-        const res = await fetch("https://zzotvstvmnlmfrulxhvl.supabase.co/functions/v1/sync-discord-roster", {
-            headers: {
-                Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-            }
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            showNotification(data.message || "Discord roster synced successfully!", "success");
-            if (typeof fetchRosterFromSupabase === 'function') {
-                await fetchRosterFromSupabase();
-            }
-        } else {
-            showNotification("Sync failed: " + (data.error || "Unknown error"), "error");
-        }
-    } catch (err) {
-        console.error("Error triggering roster sync:", err);
-        showNotification("Sync error: " + err.message, "error");
-    }
-}
-
-async function triggerDiscordRosterSync() {
-    if (typeof showNotification === 'function') {
-        showNotification("Syncing full Discord server roster...");
-    }
-
-    try {
-        // Use supabaseClient.functions.invoke to handle apikey, CORS headers, and auth automatically
-        const { data, error } = await supabaseClient.functions.invoke('sync-discord-roster');
+        // Target the exact function endpoint 'dynamic-service' assigned by Supabase
+        const { data, error } = await supabaseClient.functions.invoke('dynamic-service');
 
         if (error) {
             console.error("Functions invoke error:", error);
-            showNotification("Sync failed: " + (error.message || "Unknown error"), "error");
+            showNotification("Sync error: " + error.message, "error");
             return;
         }
 
-        showNotification(data?.message || "Discord roster synced successfully!", "success");
+        if (data && data.message) {
+            showNotification(data.message, "success");
+        } else if (data && data.error) {
+            showNotification("Sync failed: " + data.error, "error");
+        } else {
+            showNotification("Discord roster synced successfully!", "success");
+        }
+
         if (typeof fetchRosterFromSupabase === 'function') {
             await fetchRosterFromSupabase();
         }
