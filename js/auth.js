@@ -1,4 +1,4 @@
-// Authentication & Discord OAuth Sync
+// Authentication & Discord OAuth Sync (Fixed & Hardened)
 async function loginWithDiscord() {
     try {
         console.log("loginWithDiscord initiated...");
@@ -103,7 +103,7 @@ async function updateAuthUI(session) {
 
             if (isOfficer) {
                 if (typeof showNotification === 'function') {
-                    showNotification("Welcome Grandmaster! Officer Command Center unlocked.", "success");
+                    showNotification("Welcome Officer! Command Center unlocked.", "success");
                 }
                 if (officerNavBtn) officerNavBtn.classList.remove('hidden');
                 if (mobileOfficerBtn) mobileOfficerBtn.classList.remove('hidden');
@@ -194,6 +194,7 @@ async function syncUserToDatabaseRoster(session, roleData) {
     const userMeta = session.user.user_metadata || {};
     const userEmail = (session.user.email || '').toLowerCase();
     
+    // Distinct Discord User Identifier
     const discordId = userMeta.provider_id || session.user.identities?.[0]?.id || userMeta.sub || session.user.id;
     const discordName = userMeta.full_name || userMeta.name || userMeta.custom_claims?.global_name || userMeta.email || "Member";
 
@@ -201,63 +202,51 @@ async function syncUserToDatabaseRoster(session, roleData) {
                          discordName.toLowerCase().includes('ferral') || 
                          discordName.toLowerCase().includes('strovanoski');
 
-    // Use .maybeSingle() to prevent PGRST116 single-row exceptions from stopping script execution
-    let { data: existingMember } = await supabaseClient
+    // Query STRICTLY by discord_id to prevent hijacking other profiles
+    let { data: existingMember, error: fetchErr } = await supabaseClient
         .from('guild_members')
         .select('*')
         .eq('discord_id', discordId)
         .maybeSingle();
 
-    if (!existingMember) {
-        const { data: fallbackList } = await supabaseClient
-            .from('guild_members')
-            .select('*')
-            .or(`in_game_name.ilike.%ferral%,in_game_name.ilike.%strovanoski%`)
-            .limit(1);
-
-        if (fallbackList && fallbackList.length > 0) {
-            existingMember = fallbackList[0];
-        }
+    if (fetchErr) {
+        console.error("Error fetching member profile:", fetchErr.message);
     }
 
     let targetRole = isGuildOwner ? 'Grandmaster' : ((roleData.roleVerified && roleData.assignedRole) ? roleData.assignedRole : 'Squire');
 
     if (!existingMember) {
+        // Create a BRAND NEW profile for this user
+        const newProfileData = {
+            discord_id: discordId,
+            username: discordName,
+            in_game_name: isGuildOwner ? 'Ferral' : discordName,
+            character_class: 'Fighter',
+            character_level: 1,
+            role: targetRole,
+            focus: 'PvE Dungeons'
+        };
+
         const { data: newMember, error: insertError } = await supabaseClient
             .from('guild_members')
-            .insert([{
-                discord_id: discordId,
-                username: discordName,
-                in_game_name: isGuildOwner ? 'Ferral' : discordName,
-                character_class: 'Beastmaster',
-                character_level: 18,
-                role: targetRole,
-                focus: 'PvE Dungeons'
-            }])
+            .insert([newProfileData])
             .select()
             .maybeSingle();
 
         if (insertError) {
-            console.error("Error inserting member:", insertError);
-            currentUserProfile = {
-                discord_id: discordId,
-                username: discordName,
-                in_game_name: isGuildOwner ? 'Ferral' : discordName,
-                character_class: 'Beastmaster',
-                character_level: 18,
-                role: targetRole,
-                focus: 'PvE Dungeons'
-            };
+            console.error("Error creating new profile:", insertError.message);
+            currentUserProfile = newProfileData;
         } else {
             currentUserProfile = newMember;
+            console.log("Successfully created new profile for:", discordName);
         }
     } else {
+        // Update existing profile role if Discord roles updated
         if (isGuildOwner && existingMember.role !== 'Grandmaster') {
             await supabaseClient.from('guild_members')
-                .update({ role: 'Grandmaster', in_game_name: 'Ferral' })
+                .update({ role: 'Grandmaster' })
                 .eq('id', existingMember.id);
             existingMember.role = 'Grandmaster';
-            existingMember.in_game_name = 'Ferral';
         } else if (roleData.roleVerified && roleData.assignedRole && existingMember.role !== targetRole) {
             await supabaseClient.from('guild_members')
                 .update({ role: targetRole })
@@ -282,15 +271,18 @@ function populateProfileForm() {
     const focusEl = document.getElementById('profile-focus');
     const roleEl = document.getElementById('profile-role');
 
-    if (nameEl) nameEl.value = currentUserProfile.in_game_name || 'Ferral';
-    if (classEl) classEl.value = currentUserProfile.character_class || 'Beastmaster';
-    if (levelEl) levelEl.value = currentUserProfile.character_level || 18;
+    if (nameEl) nameEl.value = currentUserProfile.in_game_name || '';
+    if (classEl) classEl.value = currentUserProfile.character_class || 'Fighter';
+    if (levelEl) levelEl.value = currentUserProfile.character_level || 1;
     if (focusEl) focusEl.value = currentUserProfile.focus || 'PvE Dungeons';
-    if (roleEl) roleEl.value = currentUserProfile.role || 'Grandmaster';
+    if (roleEl) roleEl.value = currentUserProfile.role || 'Squire';
 }
 
 async function saveUserProfile() {
-    if (!currentUserProfile) return;
+    if (!currentUserProfile || !currentUserProfile.id) {
+        showNotification("No active profile session found to save.", "error");
+        return;
+    }
 
     const charName = document.getElementById('profile-char-name').value.trim();
     const charClass = document.getElementById('profile-class').value;
